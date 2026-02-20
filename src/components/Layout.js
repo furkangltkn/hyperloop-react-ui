@@ -1,6 +1,15 @@
 import { Link } from "react-router-dom";
-import { Box, List, ListItemButton, ListItemText, IconButton } from "@mui/material";
+import {
+  Box,
+  List,
+  ListItemButton,
+  ListItemText,
+  IconButton,
+  Typography
+} from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
+import DashboardIcon from "@mui/icons-material/Dashboard";
+import ViewListIcon from "@mui/icons-material/ViewList";
 import ControlPanel from "./ControlPanel";
 import logo from "../assets/logo.jpeg";
 import { useState } from "react";
@@ -13,47 +22,60 @@ export default function Layout({ children }) {
       sx={{
         display: "grid",
         gridTemplateColumns: open
-          ? "90px 1fr 260px 260px"
-          : "50px 1fr 260px 260px",
+          ? "90px 1fr 260px 220px"
+          : "50px 1fr 260px 220px",
         height: "100vh",
         overflow: "hidden",
         transition: "grid-template-columns 0.3s ease",
-        background: "linear-gradient(135deg,#0b1320,#0f1f2f,#08131f)"
+        background: "linear-gradient(180deg, #0b0f1a, #05070d)",
+        fontFamily: "'Rajdhani', sans-serif"
       }}
     >
       {/* SIDEBAR */}
       <Box
         sx={{
-          background: "linear-gradient(180deg,#0a1624,#020a14)",
-          color: "#0ff",
-          p: 1,
+          background: "linear-gradient(180deg, #0d1220, #05070d)",
+          color: "#9ecbff",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          borderRight: "1px solid #1e3a5f"
+          borderRight: "1px solid rgba(255,255,255,0.08)"
         }}
       >
-        <IconButton onClick={() => setOpen(!open)} sx={{ color: "#0ff" }}>
+        {/* ☰ BUTON */}
+        <IconButton
+          onClick={() => setOpen(!open)}
+          sx={{ color: "#9ecbff", mt: 1 }}
+        >
           <MenuIcon />
         </IconButton>
 
+        {/* LOGO */}
         {open && (
           <Box sx={{ my: 1 }}>
-            <img src={logo} alt="logo" style={{ width: 40 }} />
+            <img src={logo} alt="logo" style={{ width: 42 }} />
           </Box>
         )}
 
-        <List dense sx={{ width: "100%" }}>
+        {/* MENÜ */}
+        <List dense sx={{ width: "100%", mt: 2 }}>
           <ListItemButton
             component={Link}
             to="/"
             sx={{
               justifyContent: "center",
-              color: "#9ef",
-              "&:hover": { background: "#102840" }
+              color: "#9ecbff",
+              "&:hover": { background: "rgba(100,150,255,0.15)" }
             }}
           >
-            {open && <ListItemText primary="ÖNCELİK" />}
+            <DashboardIcon />
+            {open && (
+              <ListItemText
+                primary="Öncelik"
+                sx={{ ml: 1 }}
+                primaryTypographyProps={{ fontSize: 14 }}
+              />
+            )}
           </ListItemButton>
 
           <ListItemButton
@@ -61,41 +83,55 @@ export default function Layout({ children }) {
             to="/all"
             sx={{
               justifyContent: "center",
-              color: "#9ef",
-              "&:hover": { background: "#102840" }
+              color: "#9ecbff",
+              "&:hover": { background: "rgba(100,150,255,0.15)" }
             }}
           >
-            {open && <ListItemText primary="GENEL" />}
+            <ViewListIcon />
+            {open && (
+              <ListItemText
+                primary="Genel"
+                sx={{ ml: 1 }}
+                primaryTypographyProps={{ fontSize: 14 }}
+              />
+            )}
           </ListItemButton>
         </List>
       </Box>
 
       {/* CARD ALANI */}
-      <Box sx={{ height: "100%", overflow: "hidden", p: 1 }}>
+      <Box
+        sx={{
+          height: "100%",
+          overflow: "hidden",
+          background: "radial-gradient(circle at top, #10182a, #05070d)"
+        }}
+      >
         {children}
       </Box>
 
-      {/* KAMERA */}
+      {/* KAMERA ALANI */}
       <Box
         sx={{
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "radial-gradient(circle at top,#0c1e30,#020b14)"
+          background: "#02040a",
+          borderLeft: "1px solid rgba(255,255,255,0.08)"
         }}
       >
         <Box
           sx={{
             width: "100%",
             aspectRatio: "1 / 1",
-            background: "#050d18",
+            background: "linear-gradient(145deg,#0d1426,#05070d)",
             borderRadius: 2,
-            border: "1px solid #1e3a5f",
+            border: "1px solid rgba(100,150,255,0.25)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            color: "#0ff",
-            fontFamily: "monospace",
+            color: "#6fa8ff",
+            fontFamily: "'Orbitron', sans-serif",
             letterSpacing: 2
           }}
         >
@@ -109,7 +145,9 @@ export default function Layout({ children }) {
           display: "flex",
           alignItems: "flex-end",
           justifyContent: "center",
-          pb: 2
+          pb: 2,
+          background: "linear-gradient(180deg,#060a14,#02040a)",
+          borderLeft: "1px solid rgba(255,255,255,0.08)"
         }}
       >
         <ControlPanel />

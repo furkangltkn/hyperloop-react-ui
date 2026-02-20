@@ -46,18 +46,25 @@ function ControlPanel() {
   };
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-
+    <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 1,
+          width: "100%",
+          alignItems: "center"
+        }}
+    >
       {/* WEATHER */}
       <Box
         sx={{
-          background: "linear-gradient(180deg,#071626,#020b14)",
-          color: "#0ff",
+          width: "100%",
+          background: "linear-gradient(145deg,#0d1426,#05070d)",
+          color: "#9ecbff",
           p: 1,
           borderRadius: 2,
           textAlign: "center",
-          border: "1px solid #1e3a5f",
-          fontFamily: "monospace"
+          border: "1px solid rgba(100,150,255,0.3)"
         }}
       >
         <Typography variant="body2">ISTANBUL</Typography>
@@ -68,13 +75,14 @@ function ControlPanel() {
       {/* STATE */}
       <Box
         sx={{
-          background: "#020b14",
-          color: emergency ? "red" : brake ? "orange" : "#00ff88",
+          width: "100%",
+          background: "linear-gradient(145deg,#140b0b,#05070d)",
+          color: "white",
           p: 1,
           borderRadius: 2,
           textAlign: "center",
-          border: "1px solid #1e3a5f",
-          fontFamily: "monospace"
+          border: "1px solid rgba(255,80,80,0.4)",
+          boxShadow: "0 0 8px rgba(255,80,80,0.25)"
         }}
       >
         <Typography variant="body2">SYSTEM</Typography>
