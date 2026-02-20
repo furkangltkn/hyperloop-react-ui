@@ -98,10 +98,23 @@ function TelemetryPanel({ telemetry, lastUpdate, mode }) {
             color: "#9ecbff",
             borderRadius: 2,
             border: "1px solid rgba(100,150,255,0.35)",
-            boxShadow: "0 0 10px rgba(100,150,255,0.15)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center"
+            boxShadow: "0 0 12px rgba(100,150,255,0.2)",
+            position: "relative",
+            overflow: "hidden",
+            "&::after": {
+              content: '""',
+              position: "absolute",
+              inset: 0,
+              borderRadius: 2,
+              background:
+                "linear-gradient(120deg, transparent, rgba(120,180,255,0.15), transparent)",
+              opacity: 0.6
+            },
+            "&:hover": {
+              boxShadow: "0 0 18px rgba(120,180,255,0.45)",
+              transform: "scale(1.03)"
+            },
+            transition: "all 0.2s ease"
           }}
         >
           <CardContent sx={{ textAlign: "center", p: 0.5 }}>
@@ -109,10 +122,17 @@ function TelemetryPanel({ telemetry, lastUpdate, mode }) {
               {labelMap[key] || key}
             </Typography>
 
-            <Typography variant="body1">
-              {flatData[key] ?? "--"}
+            <Typography
+              sx={{
+                fontSize: 20,
+                fontWeight: "bold",
+                color: "#fff",
+                textShadow: "0 0 6px rgba(150,200,255,0.6)"
+              }}
+            >
+               {flatData[key] ?? "--"}
             </Typography>
-
+            
             <Typography variant="caption">
               {timeStr}
             </Typography>
