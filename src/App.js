@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import * as signalR from "@microsoft/signalr";
-import TelemetryPanel from "./components/TelemetryPanel";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Layout from "./components/Layout";
+import PriorityView from "./views/PriorityView";
+import AllView from "./views/AllView";
 import ControlPanel from "./components/ControlPanel";
-import { Box } from "@mui/material";
 
-const HUB_URL = "http://localhost:5120/telemetry"; // backend portunu gerekirse değiştir
+const HUB_URL = "http://localhost:5120/telemetry";
 
 function App() {
   const [telemetry, setTelemetry] = useState({});
@@ -16,25 +18,31 @@ function App() {
       .withAutomaticReconnect()
       .build();
 
-    connection.start()
-      .then(() => console.log("SignalR connected"))
-      .catch(err => console.error("SignalR error:", err));
-
+    connection.start();
     connection.on("telemetry", data => {
       setTelemetry(data);
       setLastUpdate(new Date());
     });
 
-    return () => {
-      connection.stop();
-    };
+    return () => connection.stop();
   }, []);
 
   return (
-    <Box sx={{ width: "100vw", height: "100vh", overflow: "hidden", p: 2 }}>
-      <TelemetryPanel telemetry={telemetry} lastUpdate={lastUpdate} />
-      <ControlPanel />
-    </Box>
+    <BrowserRouter>
+      <Layout>
+        <Routes>
+          <Route
+            path="/"
+            element={<PriorityView telemetry={telemetry} lastUpdate={lastUpdate} />}
+          />
+          <Route
+            path="/all"
+            element={<AllView telemetry={telemetry} lastUpdate={lastUpdate} />}
+          />
+        </Routes>
+
+      </Layout>
+    </BrowserRouter>
   );
 }
 
