@@ -102,7 +102,8 @@ export default function Layout({ children }) {
       {/* CARD ALANI */}
       <Box
         sx={{
-          height: "100%",
+          height: "80%",
+          width: "60%",
           overflow: "hidden",
           background: "radial-gradient(circle at top, #10182a, #05070d)"
         }}

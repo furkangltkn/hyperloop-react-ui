@@ -47,9 +47,9 @@ function TelemetryPanel({ telemetry, lastUpdate, mode }) {
   "motion.sy": "Speed Y",
   "motion.sz": "Speed Z",
 
-  "motion.lx": "Gyro X",
-  "motion.ly": "Gyro Y",
-  "motion.lz": "Gyro Z",
+  "motion.lx": "Location X",
+  "motion.ly": "Location Y",
+  "motion.lz": "Location Z",
 
   "motion.ax": "Accel X",
   "motion.ay": "Accel Y",
