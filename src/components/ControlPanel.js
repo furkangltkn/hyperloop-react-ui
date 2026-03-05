@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Box, Fab, Switch, Typography } from "@mui/material";
-import forwardImg from "../assets/forward.jpeg";
-import backImg from "../assets/backward.jpeg";
-import stopImg from "../assets/stop.jpg";
-import emergencyImg from "../assets/emergency.jpg";
+import { Box, Button, Switch, Typography } from "@mui/material";
+
+// Material UI İkonları (Resimlerin yerine)
+import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp';
+import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown';
+import StopIcon from '@mui/icons-material/Stop';
+import WarningIcon from '@mui/icons-material/Warning';
+
 import logo from "../assets/logo.jpeg";
 import { sendCommand } from "../services/commandService";
 
@@ -15,7 +18,8 @@ function ControlPanel() {
   const [time, setTime] = useState(new Date());
   const [weather, setWeather] = useState("--");
 
-  const panelWidth = 120; // Tüm paneller aynı genişlikte
+  // Yazıların sığması için panel genişliğini biraz artırdık
+  const panelWidth = 150; 
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
@@ -29,18 +33,18 @@ function ControlPanel() {
     return () => clearInterval(timer);
   }, []);
 
-  const fabStyle = {
-    width: 64,
-    height: 64,
-    padding: 0,
-    overflow: "hidden"
-  };
-
-  const imgStyle = {
+  // Butonlar için ortak stil şablonu
+  const commonBtnStyle = {
     width: "100%",
-    height: "100%",
-    objectFit: "cover",
-    borderRadius: "50%"
+    py: 1.5,
+    fontWeight: "bold",
+    letterSpacing: 1,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 1,
+    borderRadius: 2,
+    transition: "all 0.2s"
   };
 
   return (
@@ -54,23 +58,17 @@ function ControlPanel() {
     >
       
       {/* LOGO */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          mb: 1
-        }}
-      >
-      <img
-        src={logo}
-        alt="logo"
-        style={{
-          width: 140,
-          height: 140,
-          objectFit: "contain",
-          filter: "drop-shadow(0 0 8px rgba(120,180,255,0.6))"
-        }}
-      />
+      <Box sx={{ display: "flex", justifyContent: "center", mb: 1 }}>
+        <img
+          src={logo}
+          alt="logo"
+          style={{
+            width: 140,
+            height: 140,
+            objectFit: "contain",
+            filter: "drop-shadow(0 0 8px rgba(120,180,255,0.6))"
+          }}
+        />
       </Box>
       
       {/* WEATHER */}
@@ -85,25 +83,11 @@ function ControlPanel() {
           border: "1px solid rgba(100,150,255,0.3)"
         }}
       >
-        <Typography variant="body2">ISTANBUL</Typography>
-        <Typography
-          sx={{
-            fontSize: 22,
-            fontWeight: "bold",
-            color: "#6fa8ff",
-            textShadow: "0 0 6px rgba(120,180,255,0.6)"
-          }}
-        >
+        <Typography variant="body2">İSTANBUL</Typography>
+        <Typography sx={{ fontSize: 22, fontWeight: "bold", color: "#6fa8ff", textShadow: "0 0 6px rgba(120,180,255,0.6)" }}>
           {weather}
         </Typography>
-
-        <Typography
-          sx={{
-            fontSize: 14,
-            letterSpacing: 1,
-            color: "#9ecbff"
-          }}
-        >
+        <Typography sx={{ fontSize: 14, letterSpacing: 1, color: "#9ecbff" }}>
           {time.toLocaleTimeString()}
         </Typography>
       </Box>
@@ -121,8 +105,7 @@ function ControlPanel() {
           boxShadow: "0 0 8px rgba(255,80,80,0.25)"
         }}
       >
-        <Typography variant="body2">SYSTEM</Typography>
-
+        <Typography variant="body2" sx={{ color: "#94a3b8" }}>SİSTEM DURUMU</Typography>
         <Typography
           sx={{
             fontWeight: "bold",
@@ -135,17 +118,17 @@ function ControlPanel() {
               : "0 0 8px rgba(0,255,150,0.7)"
           }}
         >
-          {emergency ? "EMERGENCY" : brake ? "BRAKE" : "READY"}
+          {emergency ? "ACİL DURUM" : brake ? "FREN AKTİF" : "HAZIR"}
         </Typography>
       </Box>
 
-      {/* BUTTON PANEL */}
+      {/* BUTTON PANEL (KONTROL İKONLARI VE YAZILAR) */}
       <Box
         sx={{
           width: panelWidth,
           display: "flex",
           flexDirection: "column",
-          gap: 2,
+          gap: 1.5,
           alignItems: "center",
           background: "linear-gradient(180deg,#050d18,#020b14)",
           padding: 2,
@@ -153,47 +136,96 @@ function ControlPanel() {
           border: "1px solid #1e3a5f"
         }}
       >
-        <Fab sx={{ ...fabStyle, background: "#0a3" }} onClick={() => sendCommand("FORWARD")}>
-          <img src={forwardImg} alt="forward" style={imgStyle} />
-        </Fab>
+        {/* İLERİ BUTONU (YEŞİL) */}
+        <Button
+          variant="contained"
+          onClick={() => sendCommand("FORWARD")}
+          sx={{
+            ...commonBtnStyle,
+            background: "rgba(0, 229, 255, 0.1)", // İçi hafif şeffaf turkuaz
+            border: "1px solid #00e5ff", // Turkuaz çerçeve
+            color: "#00e5ff", // Turkuaz ikon ve yazı
+            "&:hover": { background: "rgba(0, 229, 255, 0.3)", boxShadow: "0 0 15px rgba(0, 229, 255, 0.5)" }
+          }}
+        >
+          <KeyboardDoubleArrowUpIcon /> İLERİ
+        </Button>
 
-        <Fab
-          sx={{ ...fabStyle, background: brake ? "#a00" : "#333" }}
+        {/* FREN BUTONU (KIRMIZI) */}
+        <Button
+          variant="contained"
           onClick={() => {
             setBrake(!brake);
             sendCommand("BRAKE");
           }}
+          sx={{
+            ...commonBtnStyle,
+            background: brake ? "rgba(255, 145, 0, 0.3)" : "rgba(255, 145, 0, 0.1)",
+            border: "1px solid #ff9100",
+            color: "#ff9100",
+            "&:hover": { background: "rgba(255, 145, 0, 0.3)", boxShadow: "0 0 15px rgba(255, 145, 0, 0.5)" }
+          }}
         >
-          <img src={stopImg} alt="stop" style={imgStyle} />
-        </Fab>
+          <StopIcon /> FREN
+        </Button>
 
-        <Fab sx={{ ...fabStyle, background: "#035" }} onClick={() => sendCommand("BACKWARD")}>
-          <img src={backImg} alt="back" style={imgStyle} />
-        </Fab>
+        {/* GERİ BUTONU (YEŞİL) */}
+        <Button
+          variant="contained"
+          onClick={() => sendCommand("BACKWARD")}
+          sx={{
+            ...commonBtnStyle,
+            background: "rgba(0, 229, 255, 0.1)", // İçi hafif şeffaf turkuaz
+            border: "1px solid #00e5ff", // Turkuaz çerçeve
+            color: "#00e5ff", // Turkuaz ikon ve yazı
+            "&:hover": { background: "rgba(0, 229, 255, 0.3)", boxShadow: "0 0 15px rgba(0, 229, 255, 0.5)" }
+          }}
+        >
+          <KeyboardDoubleArrowDownIcon /> GERİ
+        </Button>
 
-        <Fab
-          sx={{ ...fabStyle, background: emergency ? "#f00" : "#aa0" }}
+        {/* ACİL DURUM BUTONU (KIRMIZI VE PARLAK) */}
+        <Button
+          variant="contained"
           onClick={() => {
             setEmergency(!emergency);
             sendCommand("EMERGENCY");
           }}
-        >
-          <img src={emergencyImg} alt="emergency" style={imgStyle} />
-        </Fab>
-
-        <Typography color="#0ff" fontFamily="monospace" variant="body2">
-          AUTONOMOUS {autonomous ? "ON" : "OFF"}
-        </Typography>
-
-        <Switch
-          size="small"
-          checked={autonomous}
-          onChange={(e) => {
-            const val = e.target.checked;
-            setAutonomous(val);
-            sendCommand(val ? "AUTONOMOUS_ON" : "AUTONOMOUS_OFF");
+          sx={{
+            ...commonBtnStyle,
+            mt: 1, // Acil durum butonunu diğerlerinden biraz ayırmak için üstten boşluk
+            background: emergency ? "#ff1744" : "#b71c1c", 
+            color: "#fff",
+            border: "1px solid #ff5252",
+            boxShadow: emergency ? "0 0 20px rgba(255, 23, 68, 0.8)" : "none",
+            animation: emergency ? "pulse 1s infinite alternate" : "none",
+            "&:hover": { background: "#ff1744" },
+            "@keyframes pulse": {
+              "0%": { transform: "scale(1)" },
+              "100%": { transform: "scale(1.05)", boxShadow: "0 0 25px rgba(255, 23, 68, 1)" }
+            }
           }}
-        />
+        >
+          <WarningIcon /> ACİL
+        </Button>
+
+        {/* OTONOM MOD */}
+        <Box sx={{ width: "100%", mt: 1, p: 1, background: "rgba(0,0,0,0.3)", borderRadius: 2, textAlign: "center", border: "1px solid rgba(100,150,255,0.2)" }}>
+          <Typography color="#0ff" fontFamily="monospace" variant="body2" sx={{ mb: 0.5 }}>
+            OTONOM MOD
+          </Typography>
+          <Switch
+            size="small"
+            color="info"
+            checked={autonomous}
+            onChange={(e) => {
+              const val = e.target.checked;
+              setAutonomous(val);
+              sendCommand(val ? "AUTONOMOUS_ON" : "AUTONOMOUS_OFF");
+            }}
+          />
+        </Box>
+
       </Box>
     </Box>
   );
