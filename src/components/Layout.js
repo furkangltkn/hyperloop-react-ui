@@ -1,13 +1,7 @@
 import { Link } from "react-router-dom";
 import {
-  Box,
-  List,
-  ListItemButton,
-  ListItemText,
-  IconButton,
-  Typography
+  Box, List, ListItemButton, ListItemText, IconButton, Typography
 } from "@mui/material";
-
 import MenuIcon from "@mui/icons-material/Menu";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import ViewListIcon from "@mui/icons-material/ViewList";
@@ -15,12 +9,10 @@ import ViewListIcon from "@mui/icons-material/ViewList";
 import ControlPanel from "./ControlPanel";
 import ConnectionStatus from "./ConnectionStatus";
 import StatusBar from "./StatusBar";
-
 import logo from "../assets/logo.jpeg";
 import { useState } from "react";
 
-export default function Layout({ children }) {
-
+export default function Layout({ children, connectionStatus, lastUpdate }) {
   const [open, setOpen] = useState(true);
 
   return (
@@ -30,7 +22,6 @@ export default function Layout({ children }) {
         gridTemplateColumns: open
           ? "90px 1fr 340px 240px"
           : "55px 1fr 340px 240px",
-
         gridTemplateRows: "34px 1fr",
         height: "100vh",
         overflow: "hidden",
@@ -39,13 +30,12 @@ export default function Layout({ children }) {
         fontFamily: "'Rajdhani', sans-serif"
       }}
     >
-
-    <Box sx={{ gridColumn: "1 / -1" }}>
-      <StatusBar />
-    </Box>
+      <Box sx={{ gridColumn: "1 / -1" }}>
+        {/* lastUpdate prop'unu StatusBar'a iletiyoruz */}
+        <StatusBar lastUpdate={lastUpdate} />
+      </Box>
 
       {/* SIDEBAR */}
-
       <Box
         sx={{
           background: "linear-gradient(180deg,#0d1220,#05070d)",
@@ -56,11 +46,7 @@ export default function Layout({ children }) {
           color: "#9ecbff"
         }}
       >
-
-        <IconButton
-          onClick={() => setOpen(!open)}
-          sx={{ color: "#9ecbff", mt: 1 }}
-        >
+        <IconButton onClick={() => setOpen(!open)} sx={{ color: "#9ecbff", mt: 1 }}>
           <MenuIcon />
         </IconButton>
 
@@ -71,57 +57,24 @@ export default function Layout({ children }) {
         )}
 
         <List dense sx={{ width: "100%", mt: 2 }}>
-
-          <ListItemButton
-            component={Link}
-            to="/"
-            sx={{
-              justifyContent: "center",
-              "&:hover": { background: "rgba(100,150,255,0.15)" }
-            }}
-          >
+          <ListItemButton component={Link} to="/" sx={{ justifyContent: "center", "&:hover": { background: "rgba(100,150,255,0.15)" } }}>
             <DashboardIcon />
-
-            {open && (
-              <ListItemText
-                primary="Öncelik"
-                sx={{ ml: 1 }}
-                primaryTypographyProps={{ fontSize: 14 }}
-              />
-            )}
-
+            {open && <ListItemText primary="Öncelik" sx={{ ml: 1 }} primaryTypographyProps={{ fontSize: 14 }} />}
           </ListItemButton>
 
-          <ListItemButton
-            component={Link}
-            to="/all"
-            sx={{
-              justifyContent: "center",
-              "&:hover": { background: "rgba(100,150,255,0.15)" }
-            }}
-          >
+          <ListItemButton component={Link} to="/all" sx={{ justifyContent: "center", "&:hover": { background: "rgba(100,150,255,0.15)" } }}>
             <ViewListIcon />
-
-            {open && (
-              <ListItemText
-                primary="Genel"
-                sx={{ ml: 1 }}
-                primaryTypographyProps={{ fontSize: 14 }}
-              />
-            )}
-
+            {open && <ListItemText primary="Genel" sx={{ ml: 1 }} primaryTypographyProps={{ fontSize: 14 }} />}
           </ListItemButton>
-
         </List>
 
         <Box sx={{ flexGrow: 1 }} />
 
-        <ConnectionStatus />
-
+        {/* connectionStatus prop'unu ConnectionStatus'a iletiyoruz */}
+        <ConnectionStatus status={connectionStatus} />
       </Box>
 
       {/* CARD AREA */}
-
       <Box
         sx={{
           padding: 2,
@@ -133,7 +86,6 @@ export default function Layout({ children }) {
       </Box>
 
       {/* CAMERA */}
-
       <Box
         sx={{
           display: "flex",
@@ -143,7 +95,6 @@ export default function Layout({ children }) {
           background: "#02040a"
         }}
       >
-
         <Box
           sx={{
             width: 320,
@@ -161,39 +112,13 @@ export default function Layout({ children }) {
             letterSpacing: 2
           }}
         >
-
-          <Typography
-            sx={{
-              position: "absolute",
-              top: 8,
-              left: 10,
-              fontSize: 11,
-              color: "red"
-            }}
-          >
-            ● LIVE
-          </Typography>
-
+          <Typography sx={{ position: "absolute", top: 8, left: 10, fontSize: 11, color: "red" }}>● LIVE</Typography>
           CAMERA
-
-          <Typography
-            sx={{
-              position: "absolute",
-              bottom: 8,
-              right: 10,
-              fontSize: 11,
-              color: "#7dd3fc"
-            }}
-          >
-            30 FPS
-          </Typography>
-
+          <Typography sx={{ position: "absolute", bottom: 8, right: 10, fontSize: 11, color: "#7dd3fc" }}>30 FPS</Typography>
         </Box>
-
       </Box>
 
       {/* CONTROL PANEL */}
-
       <Box
         sx={{
           display: "flex",
@@ -206,7 +131,6 @@ export default function Layout({ children }) {
       >
         <ControlPanel />
       </Box>
-
     </Box>
   );
 }
