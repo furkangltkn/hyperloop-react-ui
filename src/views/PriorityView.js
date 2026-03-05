@@ -1,11 +1,92 @@
+import { Box } from "@mui/material";
 import TelemetryPanel from "../components/TelemetryPanel";
+import NeonGauge from "../components/NeonGauge";
+import NeonTempBar from "../components/NeonTempBar";
+import MissionPanel from "../components/MissionPanel";
+import NeonHorizontalBar from "../components/NeonHorizontalBar"; // YENİ BİLEŞEN EKLENDİ
 
 export default function PriorityView({ telemetry, lastUpdate }) {
+  const progress = telemetry?.mission?.progress ?? 0;
+  
+  // Mevcut Veriler
+  const speedX = telemetry?.motion?.sx ?? 0;
+  const batTemp1 = telemetry?.temperature?.bt1 ?? 0;
+  const batTemp2 = telemetry?.temperature?.bt2 ?? 0;
+  const batTemp3 = telemetry?.temperature?.bt3 ?? 0;
+  
+  // Yeni Eklediğin Veriler (Yoksa 0 varsay)
+  const pressure = telemetry?.pressure?.p1 ?? 0; 
+  const power = telemetry?.power?.pw1 ?? 0;
+
   return (
-    <TelemetryPanel
-      telemetry={telemetry}
-      lastUpdate={lastUpdate}
-      mode="priority"
-    />
+    <Box sx={{ width: "100%", height: "100%", display: "flex", flexDirection: "column" }}>
+      
+      {/* ÜST GÖREV PANELİ */}
+      <MissionPanel progress={progress} distanceLeft={850} />
+
+      {/* ALT KISIM */}
+      <Box 
+        sx={{ 
+          display: "grid", 
+          gridTemplateColumns: "1fr 280px", 
+          flexGrow: 1, 
+          gap: 2, 
+          mt: 2, 
+          boxSizing: "border-box" 
+        }}
+      >
+        
+        {/* SOL TARAF: Kartlar */}
+        <Box sx={{ height: "100%" }}>
+          <TelemetryPanel
+            telemetry={telemetry}
+            lastUpdate={lastUpdate}
+            mode="priority"
+          />
+        </Box>
+
+        {/* SAĞ TARAF: Minimal ve Fütüristik Göstergeler */}
+        <Box 
+          sx={{ 
+            display: "flex", 
+            flexDirection: "column", 
+            gap: 2, // Elemanlar arası boşluk
+            height: "100%" 
+          }}
+        >
+          {/* 1. Hız İbresi (Yüksekliği sabitlendi) */}
+          <Box sx={{ height: 160 }}>
+            <NeonGauge value={speedX} max={300} label="HIZ" unit="M/S" color="#00e676" />
+          </Box>
+
+          {/* 2. Yeni Veriler: Güç ve Basınç (Yatay Barlar) */}
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+             {/* max değerlerini sistemine göre ayarlayabilirsin. Örn güç için 150kW */}
+             <NeonHorizontalBar value={power} max={150} label="GÜÇ TÜKETİMİ" unit="kW" color="#b388ff" />
+             
+             {/* Basınç genelde 100-101 kPa (1 atm) civarıdır. */}
+             <NeonHorizontalBar value={pressure} max={120} label="KAPSÜL BASINCI" unit="kPa" color="#29b6f6" />
+          </Box>
+
+          {/* Esnek boşluk bırakıcı: Yukarıdakileri üste, bataryaları alta iter */}
+          <Box sx={{ flexGrow: 1 }} />
+
+          {/* 3. Batarya Sıcaklıkları (Boyu 140px olarak sınırlandı!) */}
+          <Box 
+            sx={{ 
+              height: 140, // <--- UZAMAYI ENGELLEYEN SİHİRLİ DOKUNUŞ BURADA
+              display: "flex", 
+              justifyContent: "space-between", 
+              gap: 1 
+            }}
+          >
+            <NeonTempBar value={batTemp1} label="BAT 1" />
+            <NeonTempBar value={batTemp2} label="BAT 2" />
+            <NeonTempBar value={batTemp3} label="BAT 3" />
+          </Box>
+        </Box>
+
+      </Box>
+    </Box>
   );
 }
