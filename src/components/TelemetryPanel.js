@@ -9,6 +9,9 @@ import OpenWithIcon from "@mui/icons-material/OpenWith";
 import CompressIcon from "@mui/icons-material/Compress";
 import ElectricMeterIcon from "@mui/icons-material/ElectricMeter";
 
+import Sparkline from "./Sparkline";
+
+// İç içe geçmiş telemetri objesini düzleştirir
 function flattenTelemetry(obj, prefix = "") {
   let result = {};
   for (let key in obj) {
@@ -78,7 +81,6 @@ const unitMap = {
 
 function getIconComponent(key, color) {
   const style = { color: color, fontSize: 16 };
-  
   if (key.includes("temperature") || key.includes("motion.mt")) return <DeviceThermostatIcon sx={style} />;
   if (key.includes("voltage") || key.includes("power")) return <BoltIcon sx={style} />;
   if (key.includes("current")) return <ElectricMeterIcon sx={style} />;
@@ -86,7 +88,6 @@ function getIconComponent(key, color) {
   if (key.includes("motion.l")) return <GpsFixedIcon sx={style} />;
   if (key.includes("motion.a")) return <OpenWithIcon sx={style} />;
   if (key.includes("pressure")) return <CompressIcon sx={style} />;
-  
   return null;
 }
 
@@ -103,85 +104,88 @@ function getUnit(key) {
   return "";
 }
 
-function TelemetryPanel({ telemetry, lastUpdate, mode }) {
-  const flatData = flattenTelemetry(telemetry);
+function TelemetryPanel({ telemetry, lastUpdate, mode, darkMode = true }) {
+  const flatData = flattenTelemetry(telemetry || {});
 
+  // GÖZ RAHATLIĞI RENKLERİ (Soft Darks)
   function getStatusStyle(key, value) {
-    if (value == null) return { color: "#888", glow: "none" };
-
-    if (key.includes("temperature") && value > 60)
-      return { color: "#ff4d4d", glow: "0 0 15px rgba(255,80,80,0.6)" };
-
-    if (key.includes("temperature") && value > 45)
-      return { color: "#facc15", glow: "0 0 12px rgba(250,204,21,0.6)" };
-
-    if (key.includes("voltage") && value < 20)
-      return { color: "#ff4d4d", glow: "0 0 15px rgba(255,80,80,0.6)" };
-
-    return { color: "#4fc3f7", glow: "0 0 12px rgba(79,195,247,0.4)" };
+    if (value == null) return { color: darkMode ? "#565f89" : "#a8a29e" };
+    if (key.includes("temperature") && value > 60) return { color: darkMode ? "#f7768e" : "#dc2626" }; // Soft Mercan
+    if (key.includes("temperature") && value > 45) return { color: darkMode ? "#e0af68" : "#d97706" }; // Soft Kehribar
+    if (key.includes("voltage") && value < 20) return { color: darkMode ? "#f7768e" : "#dc2626" };
+    return { color: darkMode ? "#7dcfff" : "#0284c7" }; // Soft Buz Mavisi
   }
 
-  const keysToShow = mode === "all"
-    ? allKeysTemplate
-    : allKeysTemplate.filter(k => priorityKeys.includes(k));
+  const keysToShow = mode === "all" ? allKeysTemplate : allKeysTemplate.filter(k => priorityKeys.includes(k));
 
   return (
-    <Box
-      sx={{
-        width: "100%",
-        height: "100%",
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
-        gridAutoRows: "80px",
-        gap: 1.5,
-        padding: 1,
-        boxSizing: "border-box",
-        overflowY: "auto",
-        "&::-webkit-scrollbar": { width: "6px" },
-        "&::-webkit-scrollbar-thumb": { background: "#1e293b", borderRadius: "3px" }
+    <Box 
+      sx={{ 
+        width: "100%", 
+        height: "100%", 
+        display: "grid", 
+        gridTemplateColumns: mode === "all" ? "repeat(3, 1fr)" : "repeat(auto-fit, minmax(140px, 1fr))", 
+        maxWidth: mode === "all" ? "700px" : "100%", 
+        margin: mode === "all" ? "0 auto" : "0", 
+        gridAutoRows: "80px", 
+        gap: 1.5, 
+        padding: 1, 
+        boxSizing: "border-box", 
+        overflowY: "auto", 
+        "&::-webkit-scrollbar": { width: "4px" }, 
+        "&::-webkit-scrollbar-thumb": { background: darkMode ? "#363b54" : "#d6d3d1", borderRadius: 4 } 
       }}
     >
       {keysToShow.map(key => {
         const value = flatData[key];
-        const { color, glow } = getStatusStyle(key, value);
+        const { color } = getStatusStyle(key, value);
         const title = labelMap[key] || key.toUpperCase();
         const unit = getUnit(key);
 
         return (
-          <Card
-            key={key}
-            sx={{
-              height: "100%",
-              borderRadius: 2,
-              background: "linear-gradient(145deg,#0b1324,#05070d)",
-              border: `1px solid ${color}55`,
-              boxShadow: glow,
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "center",
-              transition: "all 0.3s ease",
-              position: "relative"
+          <Card 
+            key={key} 
+            sx={{ 
+              position: "relative", 
+              height: "100%", 
+              background: darkMode ? "#1f1f2e" : "#ffffff", 
+              border: `1px solid rgba(255,255,255,0.03)`, 
+              borderRadius: 2, 
+              display: "flex", 
+              flexDirection: "column", 
+              justifyContent: "center", 
+              alignItems: "center", 
+              boxShadow: "none" 
             }}
           >
-            <CardContent sx={{ p: "8px !important", width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
-              
+            
+            <Sparkline value={value} color={color} />
+
+            <CardContent 
+              sx={{ 
+                p: "8px !important", 
+                width: "100%", 
+                display: "flex", 
+                flexDirection: "column", 
+                alignItems: "center", 
+                position: "relative", 
+                zIndex: 1 
+              }}
+            >
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 0.5 }}>
                 {getIconComponent(key, color)}
-                <Typography sx={{ fontSize: 10, color: "#94a3b8", letterSpacing: 0.5, fontWeight: "bold", textAlign: "center", whiteSpace: "nowrap" }}>
+                <Typography sx={{ fontSize: 10, color: darkMode ? "#565f89" : "#8a7e71", letterSpacing: 0.5, fontWeight: "500", textAlign: "center", whiteSpace: "nowrap" }}>
                   {title}
                 </Typography>
               </Box>
-
               <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.5 }}>
-                <Typography sx={{ fontSize: 20, fontWeight: "bold", color: color, fontFamily: "monospace" }}>
+                <Typography sx={{ fontSize: 20, fontWeight: "500", color: darkMode ? "#c0caf5" : "#1e293b", fontFamily: "monospace" }}>
                   {value !== undefined ? value : "--"}
                 </Typography>
                 <Typography sx={{ fontSize: 10, color: color, opacity: 0.8 }}>
                   {value !== undefined ? unit : ""}
                 </Typography>
               </Box>
-
             </CardContent>
           </Card>
         );

@@ -3,10 +3,12 @@ import TelemetryPanel from "../components/TelemetryPanel";
 import NeonGauge from "../components/NeonGauge";
 import NeonTempBar from "../components/NeonTempBar";
 import MissionPanel from "../components/MissionPanel";
-import NeonHorizontalBar from "../components/NeonHorizontalBar"; // YENİ BİLEŞEN EKLENDİ
+import NeonHorizontalBar from "../components/NeonHorizontalBar"; 
 
 export default function PriorityView({ telemetry, lastUpdate }) {
+  // Görev verileri dinamikleştirildi
   const progress = telemetry?.mission?.progress ?? 0;
+  const distanceLeft = telemetry?.mission?.distanceLeft ?? 850; 
   
   // Mevcut Veriler
   const speedX = telemetry?.motion?.sx ?? 0;
@@ -14,7 +16,7 @@ export default function PriorityView({ telemetry, lastUpdate }) {
   const batTemp2 = telemetry?.temperature?.bt2 ?? 0;
   const batTemp3 = telemetry?.temperature?.bt3 ?? 0;
   
-  // Yeni Eklediğin Veriler (Yoksa 0 varsay)
+  // Yeni Veriler 
   const pressure = telemetry?.pressure?.p1 ?? 0; 
   const power = telemetry?.power?.pw1 ?? 0;
 
@@ -22,7 +24,7 @@ export default function PriorityView({ telemetry, lastUpdate }) {
     <Box sx={{ width: "100%", height: "100%", display: "flex", flexDirection: "column" }}>
       
       {/* ÜST GÖREV PANELİ */}
-      <MissionPanel progress={progress} distanceLeft={850} />
+      <MissionPanel progress={progress} distanceLeft={distanceLeft} />
 
       {/* ALT KISIM */}
       <Box 
@@ -50,31 +52,28 @@ export default function PriorityView({ telemetry, lastUpdate }) {
           sx={{ 
             display: "flex", 
             flexDirection: "column", 
-            gap: 2, // Elemanlar arası boşluk
+            gap: 2, 
             height: "100%" 
           }}
         >
-          {/* 1. Hız İbresi (Yüksekliği sabitlendi) */}
+          {/* 1. Hız İbresi (Yükseklik Sabitlendi) */}
           <Box sx={{ height: 160 }}>
             <NeonGauge value={speedX} max={300} label="HIZ" unit="M/S" color="#00e676" />
           </Box>
 
-          {/* 2. Yeni Veriler: Güç ve Basınç (Yatay Barlar) */}
+          {/* 2. Güç ve Basınç (Yatay Barlar) */}
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-             {/* max değerlerini sistemine göre ayarlayabilirsin. Örn güç için 150kW */}
              <NeonHorizontalBar value={power} max={150} label="GÜÇ TÜKETİMİ" unit="kW" color="#b388ff" />
-             
-             {/* Basınç genelde 100-101 kPa (1 atm) civarıdır. */}
              <NeonHorizontalBar value={pressure} max={120} label="KAPSÜL BASINCI" unit="kPa" color="#29b6f6" />
           </Box>
 
-          {/* Esnek boşluk bırakıcı: Yukarıdakileri üste, bataryaları alta iter */}
+          {/* Esnek boşluk bırakıcı */}
           <Box sx={{ flexGrow: 1 }} />
 
-          {/* 3. Batarya Sıcaklıkları (Boyu 140px olarak sınırlandı!) */}
+          {/* 3. Batarya Sıcaklıkları (Uzamayı engelleyen sabit yükseklik) */}
           <Box 
             sx={{ 
-              height: 140, // <--- UZAMAYI ENGELLEYEN SİHİRLİ DOKUNUŞ BURADA
+              height: 140, 
               display: "flex", 
               justifyContent: "space-between", 
               gap: 1 

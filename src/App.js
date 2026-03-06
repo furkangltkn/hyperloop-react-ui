@@ -29,7 +29,7 @@ function App() {
   return (
     <BrowserRouter>
       {/* Layout'a gereken verileri prop olarak geçiyoruz */}
-      <Layout connectionStatus={connectionStatus} lastUpdate={lastUpdate}>
+      <Layout connectionStatus={connectionStatus} lastUpdate={lastUpdate} telemetry={telemetry}>
         <Routes>
           <Route
             path="/"
