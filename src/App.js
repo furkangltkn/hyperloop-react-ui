@@ -9,9 +9,11 @@ function App() {
   const [telemetry, setTelemetry] = useState({});
   const [lastUpdate, setLastUpdate] = useState(null);
   const [connectionStatus, setConnectionStatus] = useState("disconnected");
+  
+  // TEMA KONTROLÜ ARTIK BURADA! (Varsayılan: Karanlık)
+  const [darkMode, setDarkMode] = useState(true); 
 
   useEffect(() => {
-    // Servisi başlat ve callback'leri ver
     telemetryService.start(
       (data) => {
         setTelemetry(data);
@@ -21,33 +23,26 @@ function App() {
         setConnectionStatus(status);
       }
     );
-
-    // Component unmount olduğunda bağlantıyı temizle
     return () => telemetryService.stop();
   }, []);
 
   return (
     <BrowserRouter>
-      {/* Layout'a gereken verileri prop olarak geçiyoruz */}
-      <Layout connectionStatus={connectionStatus} lastUpdate={lastUpdate} telemetry={telemetry}>
+      <Layout 
+        connectionStatus={connectionStatus} 
+        lastUpdate={lastUpdate} 
+        telemetry={telemetry}
+        darkMode={darkMode}           // Layout'a temayı gönderdik
+        setDarkMode={setDarkMode}     // Butonun çalışması için fonksiyonu gönderdik
+      >
         <Routes>
           <Route
             path="/"
-            element={
-              <PriorityView
-                telemetry={telemetry}
-                lastUpdate={lastUpdate}
-              />
-            }
+            element={<PriorityView telemetry={telemetry} lastUpdate={lastUpdate} darkMode={darkMode} />}
           />
           <Route
             path="/all"
-            element={
-              <AllView
-                telemetry={telemetry}
-                lastUpdate={lastUpdate}
-              />
-            }
+            element={<AllView telemetry={telemetry} lastUpdate={lastUpdate} darkMode={darkMode} />}
           />
         </Routes>
       </Layout>

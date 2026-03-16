@@ -11,7 +11,6 @@ import ElectricMeterIcon from "@mui/icons-material/ElectricMeter";
 
 import Sparkline from "./Sparkline";
 
-// İç içe geçmiş telemetri objesini düzleştirir
 function flattenTelemetry(obj, prefix = "") {
   let result = {};
   for (let key in obj) {
@@ -36,9 +35,12 @@ const allKeysTemplate = [
 ];
 
 const priorityKeys = [
-  "temperature.bt1", "temperature.bt2", "temperature.bt3",
-  "motion.sx", "motion.sy", "motion.sz",
-  "pressure.p1", "power.pw1"
+  "temperature.bt1", 
+  "temperature.bt2", 
+  "temperature.bt3", 
+  "motion.sx", 
+  "pressure.p1", 
+  "power.pw1"
 ];
 
 const labelMap = {
@@ -68,14 +70,14 @@ const labelMap = {
 };
 
 const unitMap = {
-  temperature: "°C",
-  current: "A",
-  voltage: "V",
-  motion_mt: "°C",
-  motion_s: "m/s",
-  motion_l: "m",
-  motion_a: "G",
-  pressure: "kPa",
+  temperature: "°C", 
+  current: "A", 
+  voltage: "V", 
+  motion_mt: "°C", 
+  motion_s: "m/s", 
+  motion_l: "m", 
+  motion_a: "G", 
+  pressure: "kPa", 
   power: "kW"
 };
 
@@ -107,13 +109,12 @@ function getUnit(key) {
 function TelemetryPanel({ telemetry, lastUpdate, mode, darkMode = true }) {
   const flatData = flattenTelemetry(telemetry || {});
 
-  // GÖZ RAHATLIĞI RENKLERİ (Soft Darks)
   function getStatusStyle(key, value) {
-    if (value == null) return { color: darkMode ? "#565f89" : "#a8a29e" };
-    if (key.includes("temperature") && value > 60) return { color: darkMode ? "#f7768e" : "#dc2626" }; // Soft Mercan
-    if (key.includes("temperature") && value > 45) return { color: darkMode ? "#e0af68" : "#d97706" }; // Soft Kehribar
-    if (key.includes("voltage") && value < 20) return { color: darkMode ? "#f7768e" : "#dc2626" };
-    return { color: darkMode ? "#7dcfff" : "#0284c7" }; // Soft Buz Mavisi
+    if (value == null) return { color: darkMode ? "#565f89" : "#827566" };
+    if (key.includes("temperature") && value > 60) return { color: darkMode ? "#f7768e" : "#be123c" }; 
+    if (key.includes("temperature") && value > 45) return { color: darkMode ? "#e0af68" : "#b45309" }; 
+    if (key.includes("voltage") && value < 20) return { color: darkMode ? "#f7768e" : "#be123c" };
+    return { color: darkMode ? "#7dcfff" : "#0277bd" }; 
   }
 
   const keysToShow = mode === "all" ? allKeysTemplate : allKeysTemplate.filter(k => priorityKeys.includes(k));
@@ -124,16 +125,18 @@ function TelemetryPanel({ telemetry, lastUpdate, mode, darkMode = true }) {
         width: "100%", 
         height: "100%", 
         display: "grid", 
-        gridTemplateColumns: mode === "all" ? "repeat(3, 1fr)" : "repeat(auto-fit, minmax(140px, 1fr))", 
-        maxWidth: mode === "all" ? "700px" : "100%", 
-        margin: mode === "all" ? "0 auto" : "0", 
-        gridAutoRows: "80px", 
+        gridTemplateColumns: mode === "all" ? "repeat(3, minmax(110px, 160px))" : "repeat(auto-fit, minmax(110px, 160px))", 
+        gridAutoRows: "75px", 
+        justifyContent: mode === "all" ? "center" : "flex-start",
+        alignContent: "flex-start", 
+        maxWidth: "100%", 
+        margin: "0", 
         gap: 1.5, 
         padding: 1, 
         boxSizing: "border-box", 
         overflowY: "auto", 
         "&::-webkit-scrollbar": { width: "4px" }, 
-        "&::-webkit-scrollbar-thumb": { background: darkMode ? "#363b54" : "#d6d3d1", borderRadius: 4 } 
+        "&::-webkit-scrollbar-thumb": { background: darkMode ? "#363b54" : "#d1c6b4", borderRadius: 4 } 
       }}
     >
       {keysToShow.map(key => {
@@ -148,8 +151,8 @@ function TelemetryPanel({ telemetry, lastUpdate, mode, darkMode = true }) {
             sx={{ 
               position: "relative", 
               height: "100%", 
-              background: darkMode ? "#1f1f2e" : "#ffffff", 
-              border: `1px solid rgba(255,255,255,0.03)`, 
+              background: darkMode ? "#1f1f2e" : "#efe7d3", 
+              border: `1px solid ${darkMode ? "rgba(255,255,255,0.03)" : "rgba(67, 56, 44, 0.08)"}`, 
               borderRadius: 2, 
               display: "flex", 
               flexDirection: "column", 
@@ -158,31 +161,20 @@ function TelemetryPanel({ telemetry, lastUpdate, mode, darkMode = true }) {
               boxShadow: "none" 
             }}
           >
-            
             <Sparkline value={value} color={color} />
 
-            <CardContent 
-              sx={{ 
-                p: "8px !important", 
-                width: "100%", 
-                display: "flex", 
-                flexDirection: "column", 
-                alignItems: "center", 
-                position: "relative", 
-                zIndex: 1 
-              }}
-            >
+            <CardContent sx={{ p: "8px !important", width: "100%", display: "flex", flexDirection: "column", alignItems: "center", position: "relative", zIndex: 1 }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 0.5 }}>
                 {getIconComponent(key, color)}
-                <Typography sx={{ fontSize: 10, color: darkMode ? "#565f89" : "#8a7e71", letterSpacing: 0.5, fontWeight: "500", textAlign: "center", whiteSpace: "nowrap" }}>
+                <Typography sx={{ fontSize: 9, color: darkMode ? "#565f89" : "#827566", letterSpacing: 0.5, fontWeight: "500", textAlign: "center", whiteSpace: "nowrap" }}>
                   {title}
                 </Typography>
               </Box>
               <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.5 }}>
-                <Typography sx={{ fontSize: 20, fontWeight: "500", color: darkMode ? "#c0caf5" : "#1e293b", fontFamily: "monospace" }}>
+                <Typography sx={{ fontSize: 18, fontWeight: "500", color: darkMode ? "#c0caf5" : "#43382c", fontFamily: "monospace" }}>
                   {value !== undefined ? value : "--"}
                 </Typography>
-                <Typography sx={{ fontSize: 10, color: color, opacity: 0.8 }}>
+                <Typography sx={{ fontSize: 9, color: color, opacity: 0.8 }}>
                   {value !== undefined ? unit : ""}
                 </Typography>
               </Box>

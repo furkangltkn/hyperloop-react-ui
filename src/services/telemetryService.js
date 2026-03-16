@@ -5,44 +5,71 @@ const HUB_URL = "http://localhost:5120/telemetry";
 class TelemetryService {
   constructor() {
     this.connection = new signalR.HubConnectionBuilder()
-      .withUrl(HUB_URL)
+      .withUrl(HUB_URL, {
+        withCredentials: true,
+      })
       .withAutomaticReconnect()
+      .configureLogging(signalR.LogLevel.Trace)
       .build();
-      
+
     this.lastUpdateTime = 0;
-    this.throttleLimit = 100; // Saniyede 10 güncelleme limiti (100ms)
+    this.throttleLimit = 100;
   }
 
-  start(onTelemetryReceived, onStatusChange) {
-    this.connection.off("telemetry"); // Önceki dinleyicileri temizle (Memory leak önleme)
-    
+  async start(onTelemetryReceived, onStatusChange) {
+    console.log("SignalR start çağrıldı. State:", this.connection.state);
+
+    this.connection.off("telemetry");
+
     this.connection.on("telemetry", (data) => {
+      console.log("Telemetry event alındı:", data);
+
       const now = Date.now();
-      // Throttling: Belirlenen süreden önce gelen verileri yoksay
       if (now - this.lastUpdateTime > this.throttleLimit) {
         onTelemetryReceived(data);
         this.lastUpdateTime = now;
       }
     });
 
-    this.connection.onreconnecting(() => onStatusChange("reconnecting"));
-    this.connection.onreconnected(() => onStatusChange("connected"));
-    this.connection.onclose(() => onStatusChange("disconnected"));
+    this.connection.onreconnecting((err) => {
+      console.log("SignalR reconnecting:", err);
+      onStatusChange("reconnecting");
+    });
 
-    return this.connection.start()
-      .then(() => {
-        console.log("SignalR connected");
-        onStatusChange("connected");
-      })
-      .catch((err) => {
-        console.error("SignalR connection error:", err);
-        onStatusChange("disconnected");
-      });
+    this.connection.onreconnected((connectionId) => {
+      console.log("SignalR reconnected:", connectionId);
+      onStatusChange("connected");
+    });
+
+    this.connection.onclose((err) => {
+      console.log("SignalR closed:", err);
+      onStatusChange("disconnected");
+    });
+
+    if (this.connection.state !== signalR.HubConnectionState.Disconnected) {
+      console.log("SignalR başlatılmadı çünkü state:", this.connection.state);
+      return;
+    }
+
+    try {
+      await this.connection.start();
+      console.log("SignalR connected");
+      onStatusChange("connected");
+    } catch (err) {
+      console.error("SignalR connection error:", err);
+      onStatusChange("disconnected");
+    }
   }
 
-  stop() {
-    if (this.connection) this.connection.stop();
+  async stop() {
+    if (
+      this.connection &&
+      this.connection.state !== signalR.HubConnectionState.Disconnected
+    ) {
+      await this.connection.stop();
+    }
   }
 }
 
-export default new TelemetryService();
+const telemetryService = new TelemetryService();
+export default telemetryService;
