@@ -1,7 +1,6 @@
 import { Box, Typography } from "@mui/material";
 
 export default function ConnectionStatus({ status }) {
-
   const colors = {
     connected: "#22c55e",
     reconnecting: "#facc15",
@@ -9,9 +8,9 @@ export default function ConnectionStatus({ status }) {
   };
 
   const labels = {
-    connected: "CONNECTED",
+    connected: "BAĞLANTI ✔",
     reconnecting: "RECONNECTING",
-    disconnected: "DISCONNECTED"
+    disconnected: "BAĞLANTI ×"
   };
 
   return (
@@ -22,7 +21,6 @@ export default function ConnectionStatus({ status }) {
         gap: 1
       }}
     >
-
       <Box
         sx={{
           width: 10,
@@ -34,6 +32,7 @@ export default function ConnectionStatus({ status }) {
       />
 
       <Typography
+        component="span"
         sx={{
           color: colors[status],
           fontSize: 12,
@@ -43,7 +42,6 @@ export default function ConnectionStatus({ status }) {
       >
         {labels[status]}
       </Typography>
-
     </Box>
   );
 }

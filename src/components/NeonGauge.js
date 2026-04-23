@@ -1,66 +1,85 @@
 import React from "react";
 import { Box, Typography } from "@mui/material";
 
-export default function NeonGauge({ value = 0, max = 200, label = "SPEED X", unit = "KM/H", color = "#4fc3f7" }) {
-  const radius = 40;
-  const circumference = 2 * Math.PI * radius;
-  // Değerin 0 ile max arasında kalmasını garanti edelim
+export default function NeonGauge({ value = 0, max = 100, label = "HIZ", unit = "M/S", color = "#00e676" }) {
+  // Değeri 0 ile Max arasında sınırla
   const safeValue = Math.min(Math.max(value, 0), max);
-  const strokeDashoffset = circumference - (safeValue / max) * circumference;
+  const percentage = safeValue / max;
+  
+  // SVG Çizim Parametreleri (Kutuya sığması için optimize edildi)
+  const strokeWidth = 6;
+  const radius = 38; 
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - percentage * circumference;
 
   return (
-    <Box
-      sx={{
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "linear-gradient(145deg,#0b1324,#05070d)",
-        borderRadius: 2,
-        border: `1px solid ${color}33`,
-        boxShadow: `0 0 10px ${color}15`,
-        p: 1
-      }}
-    >
-      <Box sx={{ position: "relative", width: 100, height: 100 }}>
-        {/* Arka Plan Halkası */}
-        <svg width="100" height="100" style={{ transform: "rotate(-90deg)" }}>
-          <circle
-            cx="50" cy="50" r={radius}
-            stroke="#1e293b" strokeWidth="8" fill="none"
+    <Box sx={{ 
+      display: "flex", 
+      flexDirection: "column", 
+      alignItems: "center", 
+      justifyContent: "center", 
+      width: "100%", 
+      height: "100%", // Dışarıdaki 110px'lik kutuya tam oturur
+      position: "relative",
+      overflow: "hidden"
+    }}>
+      {/* SVG Gösterge Çemberi */}
+      <Box sx={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <svg width="85" height="85" viewBox="0 0 100 100" style={{ transform: "rotate(-90deg)" }}>
+          {/* Arka Plan Çemberi (Silik) */}
+          <circle 
+            cx="50" cy="50" r={radius} 
+            fill="transparent" 
+            stroke="rgba(255,255,255,0.05)" 
+            strokeWidth={strokeWidth} 
           />
-          {/* Neon Doldurma Halkası */}
-          <circle
-            cx="50" cy="50" r={radius}
-            stroke={color} strokeWidth="8" fill="none"
-            strokeDasharray={circumference}
-            strokeDashoffset={strokeDashoffset}
-            style={{
-              transition: "stroke-dashoffset 0.2s ease-out",
-              filter: `drop-shadow(0 0 6px ${color})`
+          {/* Renkli İlerleme Çemberi (Neon Efektli) */}
+          <circle 
+            cx="50" cy="50" r={radius} 
+            fill="transparent" 
+            stroke={color} 
+            strokeWidth={strokeWidth} 
+            strokeDasharray={circumference} 
+            strokeDashoffset={offset} 
+            strokeLinecap="round"
+            style={{ 
+              transition: "stroke-dashoffset 0.8s ease-out", 
+              filter: `drop-shadow(0 0 4px ${color})` 
             }}
           />
         </svg>
 
-        {/* Merkezdeki Rakamlar */}
-        <Box
-          sx={{
-            position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
-            display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center"
-          }}
-        >
-          <Typography sx={{ color: "#fff", fontSize: 20, fontWeight: "bold", textShadow: `0 0 8px ${color}` }}>
+        {/* Çemberin İçindeki Sayısal Değer */}
+        <Box sx={{ position: "absolute", textAlign: "center" }}>
+          <Typography sx={{ 
+            fontSize: 18, 
+            fontWeight: "900", 
+            color: "#fff", 
+            lineHeight: 1,
+            fontFamily: "monospace" 
+          }}>
             {Math.round(safeValue)}
           </Typography>
-          <Typography sx={{ color: color, fontSize: 9, letterSpacing: 1 }}>
+          <Typography sx={{ 
+            fontSize: 8, 
+            color: color, 
+            fontWeight: "bold", 
+            letterSpacing: 0.5 
+          }}>
             {unit}
           </Typography>
         </Box>
       </Box>
 
-      <Typography sx={{ color: "#94a3b8", fontSize: 11, mt: 1, letterSpacing: 1 }}>
+      {/* İbrenin Altındaki Etiket (Anlık Hız / Ortalama Hız) */}
+      <Typography sx={{ 
+        fontSize: 9, 
+        color: "#94a3b8", 
+        mt: 0.5, 
+        fontWeight: "bold", 
+        letterSpacing: 1,
+        textTransform: "uppercase"
+      }}>
         {label}
       </Typography>
     </Box>

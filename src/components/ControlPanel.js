@@ -6,10 +6,14 @@ import StopIcon from '@mui/icons-material/Stop';
 import WarningIcon from '@mui/icons-material/Warning';
 import { sendCommand } from "../services/commandService";
 
-const playSynthSound = (type) => { /* ses fonksiyonu aynı kalabilir */ };
+const playSynthSound = (type) => { 
+  /* Mevcut ses fonksiyonun */ 
+};
 
 function ControlPanel({ darkMode = true }) {
   const [brake, setBrake] = useState(false);
+  const [frontBrake, setFrontBrake] = useState(false);
+  const [rearBrake, setRearBrake] = useState(false);
   const [emergency, setEmergency] = useState(false);
   const [autonomous, setAutonomous] = useState(false);
   const [time, setTime] = useState(new Date());
@@ -23,7 +27,7 @@ function ControlPanel({ darkMode = true }) {
     ready: darkMode ? "#73daca" : "#0f766e",   
     textMain: darkMode ? "#c0caf5" : "#43382c",
     textMuted: darkMode ? "#565f89" : "#827566",
-    panelBg: darkMode ? "rgba(36, 40, 59, 0.4)" : "#efe7d3", // Eye Care Latte
+    panelBg: darkMode ? "rgba(36, 40, 59, 0.4)" : "#efe7d3", 
     border: darkMode ? "rgba(255, 255, 255, 0.05)" : "rgba(67, 56, 44, 0.12)"
   };
 
@@ -36,16 +40,21 @@ function ControlPanel({ darkMode = true }) {
   }, []);
 
   const sciFiStyle = {
-    width: "100%", height: 48, fontWeight: "bold", letterSpacing: 1, display: "flex", justifyContent: "center", alignItems: "center", gap: 1, transition: "all 0.2s", boxSizing: "border-box", borderRadius: 2, textTransform: "none"
+    width: "100%", height: 48, fontWeight: "bold", letterSpacing: 1, display: "flex", 
+    justifyContent: "center", alignItems: "center", gap: 1, transition: "all 0.2s", 
+    boxSizing: "border-box", borderRadius: 2, textTransform: "none"
   };
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5, alignItems: "center", width: panelWidth, mb: 8 }}>
+      
+      {/* Saat ve Hava Durumu */}
       <Box sx={{ width: "100%", background: colors.panelBg, color: colors.textMain, py: 0.5, textAlign: "center", border: `1px solid ${colors.border}`, borderRadius: 2 }}>
         <Typography sx={{ fontSize: 18, fontWeight: "500", color: colors.forward, lineHeight: 1.2 }}>{weather}</Typography>
         <Typography sx={{ fontSize: 11, letterSpacing: 1, color: colors.textMuted }}>{time.toLocaleTimeString()}</Typography>
       </Box>
 
+      {/* Sistem Durumu */}
       <Box sx={{ ...sciFiStyle, background: colors.panelBg, border: `1px solid ${emergency ? colors.emergency : brake ? colors.brake : colors.ready}`, flexDirection: "column", gap: 0, justifyContent: "center" }}>
         <Typography sx={{ fontSize: 9, color: colors.textMuted, letterSpacing: 1 }}>SİSTEM DURUMU</Typography>
         <Typography sx={{ fontSize: 13, fontWeight: "bold", letterSpacing: 1, color: emergency ? colors.emergency : brake ? colors.brake : colors.ready }}>
@@ -53,7 +62,45 @@ function ControlPanel({ darkMode = true }) {
         </Typography>
       </Box>
 
+      {/* Ana Kontrol Grubu */}
       <Box sx={{ width: "100%", display: "flex", flexDirection: "column", gap: 1.5, alignItems: "center", background: colors.panelBg, padding: 1.5, border: `1px solid ${colors.border}`, borderRadius: 2 }}>
+        
+        {/* Ön ve Arka Fren Butonları */}
+        <Box sx={{ display: "flex", gap: 1, width: "100%" }}>
+          <Button 
+            variant="contained" 
+            disableElevation 
+            onClick={() => setFrontBrake(!frontBrake)}
+            sx={{ 
+              ...sciFiStyle, 
+              height: 40,
+              fontSize: 10,
+              background: frontBrake ? (darkMode ? "rgba(224, 175, 104, 0.25)" : "rgba(180, 83, 9, 0.25)") : "transparent",
+              border: `1px solid ${colors.brake}`,
+              color: colors.brake,
+              flex: 1
+            }}
+          >
+            Ön Fren
+          </Button>
+          <Button 
+            variant="contained" 
+            disableElevation 
+            onClick={() => setRearBrake(!rearBrake)}
+            sx={{ 
+              ...sciFiStyle, 
+              height: 40,
+              fontSize: 10,
+              background: rearBrake ? (darkMode ? "rgba(224, 175, 104, 0.25)" : "rgba(180, 83, 9, 0.25)") : "transparent",
+              border: `1px solid ${colors.brake}`,
+              color: colors.brake,
+              flex: 1
+            }}
+          >
+            Arka Fren
+          </Button>
+        </Box>
+
         <Button variant="contained" disableElevation onClick={() => { playSynthSound("forward"); sendCommand("FORWARD"); }}
           sx={{ ...sciFiStyle, background: darkMode ? "rgba(125, 207, 255, 0.08)" : "rgba(2, 119, 189, 0.08)", border: `1px solid ${darkMode ? "rgba(125, 207, 255, 0.2)" : "rgba(2, 119, 189, 0.2)"}`, color: colors.forward, "&:hover": { background: darkMode ? "rgba(125, 207, 255, 0.15)" : "rgba(2, 119, 189, 0.15)" } }}>
           <KeyboardDoubleArrowUpIcon fontSize="small" /> İleri

@@ -17,7 +17,7 @@ export default function Sparkline({ value, color }) {
 
   return (
     <Box sx={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "40%", opacity: 0.3, zIndex: 0 }}>
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%">S
         <LineChart data={data}>
           <Line type="monotone" dataKey="val" stroke={color} strokeWidth={2} dot={false} isAnimationActive={false} />
         </LineChart>

@@ -26,18 +26,18 @@ export default function StatusBar({ lastUpdate, connectionStatus }) {
     >
 
       <Typography fontSize={12}>
-        SYSTEM ONLINE
+        SİSTEM AKTİF
       </Typography>
 
       {/* DİNAMİK BAĞLANTI GÖSTERGESİ */}
       <ConnectionStatus status={connectionStatus || "disconnected"} />
 
       <Typography fontSize={12}>
-        LATENCY 18ms
+        GECİKME 08ms
       </Typography>
 
       <Typography fontSize={12}>
-        MODE MANUAL
+        MOD MANUEL
       </Typography>
 
       <Typography fontSize={12} sx={{ fontFamily: "monospace", fontSize: 13 }}>

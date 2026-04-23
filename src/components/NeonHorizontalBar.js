@@ -2,11 +2,8 @@ import React from "react";
 import { Box, Typography } from "@mui/material";
 
 export default function NeonHorizontalBar({ value = 0, max = 100, label = "GÜÇ", unit = "kW", color = "#b388ff" }) {
-  // Değerin 0 ile max arasında kalmasını garanti et
   const safeValue = Math.min(Math.max(value, 0), max);
   const percentage = (safeValue / max) * 100;
-
-  // Güç veya Basınç kritik seviyeye gelirse yanıp sönme efekti için basit bir kural (Opsiyonel)
   const isDanger = percentage > 90; 
   const activeColor = isDanger ? "#ff4d4d" : color;
   const glow = isDanger ? `0 0 15px rgba(255, 77, 77, 0.8)` : `0 0 10px ${color}44`;
@@ -14,18 +11,18 @@ export default function NeonHorizontalBar({ value = 0, max = 100, label = "GÜÇ
   return (
     <Box
       sx={{
-        width: "100%",
+        width: "100%", // Genişliği tam yayar
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
         background: "linear-gradient(145deg,#0b1324,#05070d)",
         borderRadius: 2,
         border: `1px solid ${activeColor}44`,
         boxShadow: glow,
         p: 1.5,
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center"
+        boxSizing: "border-box" // Padding'in genişliği bozmasını engeller
       }}
     >
-      {/* Üst Kısım: Başlık ve Değer */}
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
         <Typography sx={{ color: "#94a3b8", fontSize: 11, letterSpacing: 1 }}>
           {label}
@@ -35,7 +32,6 @@ export default function NeonHorizontalBar({ value = 0, max = 100, label = "GÜÇ
         </Typography>
       </Box>
 
-      {/* Alt Kısım: Dolum Çubuğu */}
       <Box sx={{ width: "100%", height: 8, background: "#0f172a", borderRadius: 4, overflow: "hidden" }}>
         <Box
           sx={{

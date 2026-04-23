@@ -1,189 +1,189 @@
 import React from "react";
-import { Box, Card, CardContent, Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
+import NeonGauge from "./NeonGauge";
+import NeonHorizontalBar from "./NeonHorizontalBar";
 
-import DeviceThermostatIcon from "@mui/icons-material/DeviceThermostat";
-import BoltIcon from "@mui/icons-material/Bolt";
-import SpeedIcon from "@mui/icons-material/Speed";
-import GpsFixedIcon from "@mui/icons-material/GpsFixed";
-import OpenWithIcon from "@mui/icons-material/OpenWith";
-import CompressIcon from "@mui/icons-material/Compress";
-import ElectricMeterIcon from "@mui/icons-material/ElectricMeter";
-
-import Sparkline from "./Sparkline";
-
-function flattenTelemetry(obj, prefix = "") {
-  let result = {};
-  for (let key in obj) {
-    if (typeof obj[key] === "object" && obj[key] !== null) {
-      Object.assign(result, flattenTelemetry(obj[key], key + "."));
-    } else {
-      result[prefix + key] = obj[key];
-    }
-  }
-  return result;
-}
-
-const allKeysTemplate = [
-  "temperature.bt1", "temperature.bt2", "temperature.bt3",
-  "current.i1", "current.i2", "current.i3",
-  "voltage.v1", "voltage.v2", "voltage.v3",
-  "motion.mt1", "motion.mt2", "motion.mt3",
-  "motion.sx", "motion.sy", "motion.sz",
-  "motion.lx", "motion.ly", "motion.lz",
-  "motion.ax", "motion.ay", "motion.az",
-  "pressure.p1", "power.pw1"
-];
-
-const priorityKeys = [
-  "temperature.bt1", 
-  "temperature.bt2", 
-  "temperature.bt3", 
-  "motion.sx", 
-  "pressure.p1", 
-  "power.pw1"
-];
-
-const labelMap = {
-  "temperature.bt1": "Batarya 1 Sıcaklık",
-  "temperature.bt2": "Batarya 2 Sıcaklık",
-  "temperature.bt3": "Batarya 3 Sıcaklık",
-  "current.i1": "Motor 1 Akım",
-  "current.i2": "Motor 2 Akım",
-  "current.i3": "Motor 3 Akım",
-  "voltage.v1": "Motor 1 Voltaj",
-  "voltage.v2": "Motor 2 Voltaj",
-  "voltage.v3": "Motor 3 Voltaj",
-  "motion.mt1": "Motor 1 Sıcaklık",
-  "motion.mt2": "Motor 2 Sıcaklık",
-  "motion.mt3": "Motor 3 Sıcaklık",
-  "motion.sx": "Hız X Ekseni",
-  "motion.sy": "Hız Y Ekseni",
-  "motion.sz": "Hız Z Ekseni",
-  "motion.lx": "Konum X",
-  "motion.ly": "Konum Y",
-  "motion.lz": "Konum Z",
-  "motion.ax": "İvme X",
-  "motion.ay": "İvme Y",
-  "motion.az": "İvme Z",
-  "pressure.p1": "Kapsül Basıncı",
-  "power.pw1": "Genel Güç"
+const getVal = (obj, path, fallback = 0) => {
+  const val = path.split('.').reduce((acc, part) => acc && acc[part], obj);
+  return val !== undefined ? val : fallback;
 };
 
-const unitMap = {
-  temperature: "°C", 
-  current: "A", 
-  voltage: "V", 
-  motion_mt: "°C", 
-  motion_s: "m/s", 
-  motion_l: "m", 
-  motion_a: "G", 
-  pressure: "kPa", 
-  power: "kW"
-};
+export default function TelemetryPanel({ telemetry, mode, darkMode = true }) {
+  
+  // Stil: Matris Kutusu
+  const MatrixBox = ({ value, unit = "" }) => (
+    <Box sx={{ 
+      flex: 1, background: "rgba(15, 23, 42, 0.4)", border: "1px solid rgba(255,255,255,0.03)", 
+      borderRadius: 1, display: "flex", justifyContent: "center", alignItems: "center", height: 38 
+    }}>
+      <Typography sx={{ fontSize: 14, color: "#fff", fontWeight: "bold", fontFamily: "monospace" }}>
+        {typeof value === 'number' ? value.toFixed(2) : value}{unit}
+      </Typography>
+    </Box>
+  );
 
-function getIconComponent(key, color) {
-  const style = { color: color, fontSize: 16 };
-  if (key.includes("temperature") || key.includes("motion.mt")) return <DeviceThermostatIcon sx={style} />;
-  if (key.includes("voltage") || key.includes("power")) return <BoltIcon sx={style} />;
-  if (key.includes("current")) return <ElectricMeterIcon sx={style} />;
-  if (key.includes("motion.s")) return <SpeedIcon sx={style} />;
-  if (key.includes("motion.l")) return <GpsFixedIcon sx={style} />;
-  if (key.includes("motion.a")) return <OpenWithIcon sx={style} />;
-  if (key.includes("pressure")) return <CompressIcon sx={style} />;
-  return null;
-}
+  // Stil: Küçük Veri Kutusu
+  const SmallDataBox = ({ label, value, color = "#fff" }) => (
+    <Box sx={{ 
+      flex: 1, background: "rgba(30, 41, 59, 0.5)", border: "1px solid rgba(255,255,255,0.05)", 
+      borderRadius: 1, display: "flex", flexDirection: "column", alignItems: "center", py: 0.8, minWidth: 42
+    }}>
+      {label && <Typography sx={{ fontSize: 7, color: "#64748b", fontWeight: "bold" }}>{label}</Typography>}
+      <Typography sx={{ fontSize: 11, color: color, fontWeight: "bold", fontFamily: "monospace" }}>{value}</Typography>
+    </Box>
+  );
 
-function getUnit(key) {
-  if (key.includes("temperature")) return unitMap.temperature;
-  if (key.includes("current")) return unitMap.current;
-  if (key.includes("voltage")) return unitMap.voltage;
-  if (key.includes("motion.mt")) return unitMap.motion_mt;
-  if (key.includes("motion.s")) return unitMap.motion_s;
-  if (key.includes("motion.l")) return unitMap.motion_l;
-  if (key.includes("motion.a")) return unitMap.motion_a;
-  if (key.includes("pressure")) return unitMap.pressure;
-  if (key.includes("power")) return unitMap.power;
-  return "";
-}
+  // Grup Başlığı
+  const GroupHeader = ({ title }) => (
+    <Box sx={{ background: "rgba(255,255,255,0.05)", py: 0.5, px: 2, borderRadius: 1, mb: 1.5, width: "fit-content" }}>
+      <Typography sx={{ fontSize: 10, color: "#bb9af7", fontWeight: "bold", letterSpacing: 1 }}>{title}</Typography>
+    </Box>
+  );
 
-function TelemetryPanel({ telemetry, lastUpdate, mode, darkMode = true }) {
-  const flatData = flattenTelemetry(telemetry || {});
-
-  function getStatusStyle(key, value) {
-    if (value == null) return { color: darkMode ? "#565f89" : "#827566" };
-    if (key.includes("temperature") && value > 60) return { color: darkMode ? "#f7768e" : "#be123c" }; 
-    if (key.includes("temperature") && value > 45) return { color: darkMode ? "#e0af68" : "#b45309" }; 
-    if (key.includes("voltage") && value < 20) return { color: darkMode ? "#f7768e" : "#be123c" };
-    return { color: darkMode ? "#7dcfff" : "#0277bd" }; 
-  }
-
-  const keysToShow = mode === "all" ? allKeysTemplate : allKeysTemplate.filter(k => priorityKeys.includes(k));
+  if (mode === "priority") return null;
 
   return (
-    <Box 
-      sx={{ 
-        width: "100%", 
-        height: "100%", 
-        display: "grid", 
-        gridTemplateColumns: mode === "all" ? "repeat(3, minmax(110px, 160px))" : "repeat(auto-fit, minmax(110px, 160px))", 
-        gridAutoRows: "75px", 
-        justifyContent: mode === "all" ? "center" : "flex-start",
-        alignContent: "flex-start", 
-        maxWidth: "100%", 
-        margin: "0", 
-        gap: 1.5, 
-        padding: 1, 
-        boxSizing: "border-box", 
-        overflowY: "auto", 
-        "&::-webkit-scrollbar": { width: "4px" }, 
-        "&::-webkit-scrollbar-thumb": { background: darkMode ? "#363b54" : "#d1c6b4", borderRadius: 4 } 
-      }}
-    >
-      {keysToShow.map(key => {
-        const value = flatData[key];
-        const { color } = getStatusStyle(key, value);
-        const title = labelMap[key] || key.toUpperCase();
-        const unit = getUnit(key);
-
-        return (
-          <Card 
-            key={key} 
-            sx={{ 
-              position: "relative", 
-              height: "100%", 
-              background: darkMode ? "#1f1f2e" : "#efe7d3", 
-              border: `1px solid ${darkMode ? "rgba(255,255,255,0.03)" : "rgba(67, 56, 44, 0.08)"}`, 
-              borderRadius: 2, 
-              display: "flex", 
-              flexDirection: "column", 
-              justifyContent: "center", 
-              alignItems: "center", 
-              boxShadow: "none" 
-            }}
-          >
-            <Sparkline value={value} color={color} />
-
-            <CardContent sx={{ p: "8px !important", width: "100%", display: "flex", flexDirection: "column", alignItems: "center", position: "relative", zIndex: 1 }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 0.5 }}>
-                {getIconComponent(key, color)}
-                <Typography sx={{ fontSize: 9, color: darkMode ? "#565f89" : "#827566", letterSpacing: 0.5, fontWeight: "500", textAlign: "center", whiteSpace: "nowrap" }}>
-                  {title}
-                </Typography>
+    <Box sx={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", p: 1, gap: 1.5, boxSizing: "border-box" }}>
+      
+      <Box sx={{ display: "grid", gridTemplateColumns: "1fr 320px", flexGrow: 1, gap: 2, minHeight: 0 }}>
+        
+        {/* SOL KOLON: NAVİGASYON + KAYDIRILABİLİR BATARYA DETAYLARI */}
+        <Box sx={{ 
+          height: "100%", display: "flex", flexDirection: "column", gap: 2, 
+          overflowY: "auto", pr: 1,
+          "&::-webkit-scrollbar": { width: "4px" },
+          "&::-webkit-scrollbar-thumb": { background: "rgba(255,255,255,0.1)", borderRadius: 4 }
+        }}>
+          
+          {/* 1. NAVİGASYON SİSTEMİ */}
+          <Box sx={{ background: "rgba(26, 27, 38, 0.4)", p: 2.5, borderRadius: 2, border: "1px solid rgba(255,255,255,0.05)" }}>
+            <Typography sx={{ fontSize: 11, color: "#7dcfff", fontWeight: "bold", letterSpacing: 2, mb: 2 }}>NAVİGASYON SİSTEMİ</Typography>
+            <Box sx={{ display: "flex", mb: 1, ml: "100px" }}>
+              {["X", "Y", "Z"].map(axis => <Typography key={axis} sx={{ flex: 1, textAlign: "center", color: "#565f89", fontSize: 12, fontWeight: "bold" }}>{axis}</Typography>)}
+            </Box>
+            {[
+              { label: "HIZ (m/s)", vals: ["motion.sx", "motion.sy", "motion.sz"] },
+              { label: "KONUM (m)", vals: ["motion.lx", "motion.ly", "motion.lz"] },
+              { label: "İVME (g)", vals: ["motion.ax", "motion.ay", "motion.az"] }
+            ].map((row, idx) => (
+              <Box key={idx} sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: idx === 2 ? 0 : 1.5 }}>
+                <Typography sx={{ width: 100, color: "#94a3b8", fontSize: 11, fontWeight: "bold" }}>{row.label}</Typography>
+                {row.vals.map((path, i) => <MatrixBox key={i} value={getVal(telemetry, path)} />)}
               </Box>
-              <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.5 }}>
-                <Typography sx={{ fontSize: 18, fontWeight: "500", color: darkMode ? "#c0caf5" : "#43382c", fontFamily: "monospace" }}>
-                  {value !== undefined ? value : "--"}
-                </Typography>
-                <Typography sx={{ fontSize: 9, color: color, opacity: 0.8 }}>
-                  {value !== undefined ? unit : ""}
-                </Typography>
+            ))}
+          </Box>
+
+          {/* 2. BATARYA SICAKLIK GRUBU */}
+          <Box sx={{ background: "rgba(26, 27, 38, 0.4)", p: 2, borderRadius: 2, border: "1px solid rgba(255,255,255,0.05)" }}>
+            <GroupHeader title="BATARYA SICAKLIK" />
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+              <Typography sx={{ width: 80, fontSize: 10, color: "#565f89", fontWeight: "bold" }}>HV1:</Typography>
+              {[1,2,3,4,5,6,7].map(i => <SmallDataBox key={i} value={getVal(telemetry, `temperature.bt${i}`, "--")} />)}
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+              <Typography sx={{ width: 80, fontSize: 10, color: "#565f89", fontWeight: "bold" }}>HV2:</Typography>
+              {[8,9,10,11,12,13,14].map(i => <SmallDataBox key={i} value={getVal(telemetry, `temperature.bt${i}`, "--")} color="#4fc3f7" />)}
+            </Box>
+            {/* Alt Sistem & Acil Durum Satırı */}
+            <Box sx={{ display: "flex", gap: 4, ml: 1, mt: 1 }}>
+              <Typography sx={{ fontSize: 10, color: "#565f89", fontWeight: "bold" }}>Alt Sistem: <span style={{color: "#00e676"}}>{getVal(telemetry, "temperature.bt15", "--")}</span></Typography>
+              <Typography sx={{ fontSize: 10, color: "#565f89", fontWeight: "bold" }}>Acil Durum: <span style={{color: "#7dcfff"}}>{getVal(telemetry, "temperature.bt16", "--")}</span></Typography>
+            </Box>
+          </Box>
+
+          {/* 3. BATARYA VOLTAJ GRUBU */}
+          <Box sx={{ background: "rgba(26, 27, 38, 0.4)", p: 2, borderRadius: 2, border: "1px solid rgba(255,255,255,0.05)" }}>
+            <GroupHeader title="BATARYA VOLTAJ" />
+            {[1, 2].map(rowIdx => (
+              <Box key={rowIdx} sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+                <Typography sx={{ width: 80, fontSize: 10, color: "#565f89", fontWeight: "bold" }}>HV{rowIdx}:</Typography>
+                {[...Array(7)].map((_, i) => <SmallDataBox key={i} value="--" />)}
               </Box>
-            </CardContent>
-          </Card>
-        );
-      })}
+            ))}
+            {/* Alt Sistem & Acil Durum Satırı */}
+            <Box sx={{ display: "flex", gap: 4, ml: 1, mt: 1 }}>
+              <Typography sx={{ fontSize: 10, color: "#565f89", fontWeight: "bold" }}>Alt Sistem: <span style={{color: "#00e676"}}>--</span></Typography>
+              <Typography sx={{ fontSize: 10, color: "#565f89", fontWeight: "bold" }}>Acil Durum: <span style={{color: "#7dcfff"}}>--</span></Typography>
+            </Box>
+          </Box>
+
+          {/* 4. BATARYA AKIM GRUBU */}
+          <Box sx={{ background: "rgba(26, 27, 38, 0.4)", p: 2, borderRadius: 2, border: "1px solid rgba(255,255,255,0.05)" }}>
+            <GroupHeader title="BATARYA AKIM" />
+            <Box sx={{ display: "flex", gap: 4, ml: 2 }}>
+              <Typography sx={{ fontSize: 10, color: "#565f89", fontWeight: "bold" }}>HV: <span style={{color: "#fff"}}>--</span></Typography>
+              <Typography sx={{ fontSize: 10, color: "#565f89", fontWeight: "bold" }}>Alt Sistem: <span style={{color: "#00e676"}}>--</span></Typography>
+              <Typography sx={{ fontSize: 10, color: "#565f89", fontWeight: "bold" }}>Acil Durum: <span style={{color: "#7dcfff"}}>--</span></Typography>
+            </Box>
+          </Box>
+        </Box>
+
+        {/* SAĞ PANEL: PRİORİTY TASARIMI */}
+        <Box sx={{ display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5, px: 1 }}>
+             <Box sx={{ display: "flex", flexDirection: "column", gap: 1.2 }}>
+                <NeonHorizontalBar value={getVal(telemetry, "power.pw1")} max={150} label="GÜÇ TÜKETİMİ" unit="kW" color="#b388ff" />
+                <NeonHorizontalBar value={getVal(telemetry, "pressure.p1")} max={120} label="FREN BASINCI" unit="kPa" color="#29b6f6" />
+             </Box>
+             <Box>
+                <Typography sx={{ fontSize: 9, color: "#94a3b8", mb: 0.5, textAlign: "center" }}>KAPSÜL İÇ SICAKLIKLARI</Typography>
+                <Box sx={{ display: "flex", gap: 0.5 }}>
+                   <SmallDataBox label="B1" value={getVal(telemetry, "temperature.ct1", "--")} />
+                   <SmallDataBox label="B2" value={getVal(telemetry, "temperature.ct2", "--")} />
+                   <SmallDataBox label="B3" value={getVal(telemetry, "temperature.ct3", "--")} />
+                </Box>
+             </Box>
+             <Box>
+                <Typography sx={{ fontSize: 9, color: "#94a3b8", mb: 0.5, textAlign: "center" }}>BATARYA SICAKLIKLARI</Typography>
+                <Box sx={{ display: "flex", gap: 0.5 }}>
+                   <SmallDataBox label="YV-1" value={getVal(telemetry, "temperature.bt1", "--")} color="#4fc3f7" />
+                   <SmallDataBox label="YV-2" value={getVal(telemetry, "temperature.bt2", "--")} color="#4fc3f7" />
+                   <SmallDataBox label="Acil Durum" value={getVal(telemetry, "temperature.bt3", "--")} color="#4fc3f7" />
+                   <SmallDataBox label="Alt Sistem " value={getVal(telemetry, "temperature.bt4", "--")} color="#4fc3f7" />
+                </Box>
+             </Box>
+          </Box>
+          
+          {/* REFLEKTÖR SAYACI KUTUSU */}
+          <Box sx={{ px: 1, mt: 2 }}>
+            <Box sx={{ background: "rgba(15, 23, 42, 0.6)", border: "1px solid rgba(125, 207, 255, 0.2)", borderRadius: 1, py: 1, display: "flex", flexDirection: "column", alignItems: "center" }}>
+                <Typography sx={{ fontSize: 8, color: "#7dcfff", fontWeight: "bold", letterSpacing: 1 }}>REFLEKTÖR SAYACI</Typography>
+                <Typography sx={{ fontSize: 18, color: "#fff", fontWeight: "bold", fontFamily: "monospace" }}>
+                  {getVal(telemetry, "navigation.reflectorCount", 0)}
+                </Typography>
+            </Box>
+          </Box>
+          
+          {/* KONUM KUTUSU */}
+          <Box sx={{ px: 1, mt: 2 }}>
+             <Box sx={{ background: "rgba(15, 23, 42, 0.6)", border: "1px solid rgba(125, 207, 255, 0.2)", borderRadius: 1, py: 1, display: "flex", flexDirection: "column", alignItems: "center" }}>
+                <Typography sx={{ fontSize: 8, color: "#7dcfff", fontWeight: "bold", letterSpacing: 1 }}>KONUM (m)</Typography>
+                <Typography sx={{ fontSize: 18, color: "#fff", fontWeight: "bold", fontFamily: "monospace" }}>{getVal(telemetry, "motion.lx").toFixed(2)}</Typography>
+             </Box>
+          </Box>
+
+
+          <Box sx={{ flexGrow: 1, minHeight: "20px" }} />
+
+          {/* HIZ KUTULARI */}
+          <Box sx={{ display: "flex", gap: 1.2, px: 1, pb: 9.5, height: 125, alignItems: "center", justifyContent: "space-between" }}>
+            <Box sx={{ 
+              flex: 1, maxWidth: "148px", height: "100%", background: "rgba(30, 41, 59, 0.3)", 
+              border: "1px solid rgba(255,255,255,0.1)", borderRadius: 2, display: "flex", 
+              alignItems: "center", justifyContent: "center", boxSizing: "border-box" 
+            }}>
+              <NeonGauge value={getVal(telemetry, "motion.sx")} max={300} label="ANLIK HIZ" color="#00e676" />
+            </Box>
+            <Box sx={{ 
+              flex: 1, maxWidth: "148px", height: "100%", background: "rgba(30, 41, 59, 0.3)", 
+              border: "1px solid rgba(255,255,255,0.1)", borderRadius: 2, display: "flex", 
+              alignItems: "center", justifyContent: "center", boxSizing: "border-box" 
+            }}>
+              <NeonGauge value={getVal(telemetry, "motion.avgSpeed")} max={300} label="ORT. HIZ" color="#29b6f6" />
+            </Box>
+          </Box>
+        </Box>
+      </Box>
     </Box>
   );
 }
-
-export default TelemetryPanel;
