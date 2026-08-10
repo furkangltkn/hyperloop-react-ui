@@ -10,16 +10,14 @@ const playSynthSound = (type) => {
   /* Mevcut ses fonksiyonun */
 };
 
-function ControlPanel({ darkMode = true }) {
+function ControlPanel({ darkMode = true, autonomous, setAutonomous }) {
   const [brake, setBrake] = useState(false);
   const [frontBrake, setFrontBrake] = useState(false);
   const [rearBrake, setRearBrake] = useState(false);
   const [forward, setForward] = useState(false);
   const [backward, setBackward] = useState(false);
   const [emergency, setEmergency] = useState(false);
-  const [autonomous, setAutonomous] = useState(false);
   const [time, setTime] = useState(new Date());
-  const [weather, setWeather] = useState("--");
   const panelWidth = 160;
 
   const colors = {
@@ -35,9 +33,6 @@ function ControlPanel({ darkMode = true }) {
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
-    fetch("https://api.open-meteo.com/v1/forecast?latitude=41.01&longitude=28.97&current_weather=true")
-      .then((r) => r.json())
-      .then((d) => setWeather(d.current_weather.temperature + "°C"));
     return () => clearInterval(timer);
   }, []);
 
@@ -82,9 +77,11 @@ function ControlPanel({ darkMode = true }) {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5, alignItems: "center", width: panelWidth, mb: 8 }}>
 
-      {/* Saat ve Hava Durumu */}
+      {/* Yerel tarih ve saat */}
       <Box sx={{ width: "100%", background: colors.panelBg, color: colors.textMain, py: 0.5, textAlign: "center", border: `1px solid ${colors.border}`, borderRadius: 2 }}>
-        <Typography sx={{ fontSize: 18, fontWeight: "500", color: colors.forward, lineHeight: 1.2 }}>{weather}</Typography>
+        <Typography sx={{ fontSize: 13, fontWeight: "500", color: colors.forward, lineHeight: 1.4 }}>
+          {time.toLocaleDateString("tr-TR", { day: "2-digit", month: "2-digit", year: "numeric" })}
+        </Typography>
         <Typography sx={{ fontSize: 11, letterSpacing: 1, color: colors.textMuted }}>{time.toLocaleTimeString()}</Typography>
       </Box>
 

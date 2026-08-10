@@ -32,7 +32,7 @@ const OrientationIndicator = ({ label, value, color }) => (
   </Box>
 );
 
-export default function Layout({ children, lastUpdate, connectionStatus, telemetry, darkMode, setDarkMode }) {
+export default function Layout({ children, lastUpdate, connectionStatus, telemetry, autonomous, setAutonomous, darkMode, setDarkMode }) {
   const themeColors = {
     bgLayout: darkMode ? "#16161e" : "#e6dec8",
     bgSidebar: darkMode ? "#1a1b26" : "#efe7d3",
@@ -62,7 +62,7 @@ export default function Layout({ children, lastUpdate, connectionStatus, telemet
       }}
     >
       <Box sx={{ height: 34, flexShrink: 0, borderBottom: `1px solid ${themeColors.borderColor}`, background: themeColors.bgSidebar }}>
-        <StatusBar lastUpdate={lastUpdate} connectionStatus={connectionStatus} />
+        <StatusBar lastUpdate={lastUpdate} connectionStatus={connectionStatus} autonomous={autonomous} />
       </Box>
 
       <Box sx={{ display: "flex", flexGrow: 1, overflow: "hidden", position: "relative" }}>
@@ -214,7 +214,7 @@ export default function Layout({ children, lastUpdate, connectionStatus, telemet
             pt: 4
           }}
         >
-          <ControlPanel darkMode={darkMode} />
+          <ControlPanel darkMode={darkMode} autonomous={autonomous} setAutonomous={setAutonomous} />
 
           <Box sx={{ mt: "auto", pb: 4, px: 2, display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
             <Box

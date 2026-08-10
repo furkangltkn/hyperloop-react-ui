@@ -53,6 +53,7 @@ function App() {
   const [telemetry, setTelemetry] = useState({});
   const [lastUpdate, setLastUpdate] = useState(null);
   const [connectionStatus, setConnectionStatus] = useState("disconnected");
+  const [autonomous, setAutonomous] = useState(false);
   
   // TEMA KONTROLÜ ARTIK BURADA! (Varsayılan: Karanlık)
   const [darkMode, setDarkMode] = useState(true); 
@@ -77,6 +78,8 @@ function App() {
         connectionStatus={connectionStatus} 
         lastUpdate={lastUpdate} 
         telemetry={telemetry}
+        autonomous={autonomous}
+        setAutonomous={setAutonomous}
         darkMode={darkMode}           // Layout'a temayı gönderdik
         setDarkMode={setDarkMode}     // Butonun çalışması için fonksiyonu gönderdik
       >

@@ -1,7 +1,7 @@
 import { Box, Typography } from "@mui/material";
 import ConnectionStatus from "./ConnectionStatus"; 
 
-export default function StatusBar({ lastUpdate, connectionStatus }) {
+export default function StatusBar({ lastUpdate, connectionStatus, autonomous }) {
 
   const time = lastUpdate
     ? lastUpdate.toLocaleTimeString()
@@ -37,7 +37,7 @@ export default function StatusBar({ lastUpdate, connectionStatus }) {
       </Typography>
 
       <Typography fontSize={12}>
-        MOD MANUEL
+        MOD {autonomous ? "OTONOM" : "MANUEL"}
       </Typography>
 
       <Typography fontSize={12} sx={{ fontFamily: "monospace", fontSize: 13 }}>
