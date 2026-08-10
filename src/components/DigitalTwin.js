@@ -71,8 +71,8 @@ function VehicleHologram({ telemetry, darkMode }) {
 
   useFrame(() => {
     // Pitch ve Roll hareketlerini telemetriden al (Yoksa 0 kabul et)
-    const pitch = telemetry?.motion?.ax ? telemetry.motion.ax * 0.12 : 0;
-    const roll = telemetry?.motion?.ay ? telemetry.motion.ay * 0.12 : 0;
+    const pitch = telemetry?.motion?.ax ? telemetry.motion.px * 0.12 : 0;
+    const roll = telemetry?.motion?.ay ? telemetry.motion.yx * 0.12 : 0;
 
     if (meshRef.current) {
       // Hareketleri yumuşak bir sönümleme (Lerp) ile uygula
@@ -118,7 +118,7 @@ export default function DigitalTwin({ telemetry, darkMode = true }) {
       <OrbitControls
         enableZoom={false}
         enablePan={false}
-        autoRotate={!telemetry?.motion?.ax} // Hareket verisi yoksa otomatik dönsün
+        autoRotate={!telemetry?.motion?.rx} // Hareket verisi yoksa otomatik dönsün
         autoRotateSpeed={0.7}
       />
     </Canvas>

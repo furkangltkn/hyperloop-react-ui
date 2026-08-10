@@ -195,9 +195,9 @@ export default function Layout({ children, lastUpdate, connectionStatus, telemet
             </Box>
 
             <Box sx={{ display: "flex", gap: 1, mt: 1.5 }}>
-              <OrientationIndicator label="ROLL" value={telemetry?.motion?.ax || 0} color={themeColors.accent} />
-              <OrientationIndicator label="PITCH" value={telemetry?.motion?.ay || 0} color={themeColors.accent} />
-              <OrientationIndicator label="YAW" value={telemetry?.motion?.az || 0} color={themeColors.accent} />
+              <OrientationIndicator label="ROLL" value={telemetry?.motion?.rx || 0} color={themeColors.accent} />
+              <OrientationIndicator label="PITCH" value={telemetry?.motion?.px || 0} color={themeColors.accent} />
+              <OrientationIndicator label="YAW" value={telemetry?.motion?.yx || 0} color={themeColors.accent} />
             </Box>
           </Box>
         </Box>

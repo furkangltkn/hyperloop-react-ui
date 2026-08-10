@@ -21,14 +21,116 @@ class TelemetryService {
 
     this.connection.off("telemetry");
 
-    this.connection.on("telemetry", (data) => {
-      console.log("Telemetry event alındı:", data);
+    const mergeTelemetry = (target, source) => {
+      if (!source || typeof source !== "object") return target;
+      Object.entries(source).forEach(([groupKey, groupValue]) => {
+        if (groupValue && typeof groupValue === "object" && !Array.isArray(groupValue)) {
+          if (!target[groupKey]) target[groupKey] = {};
+          Object.assign(target[groupKey], groupValue);
+        } else {
+          target[groupKey] = groupValue;
+        }
+      });
+      return target;
+    };
 
-      const now = Date.now();
-      if (now - this.lastUpdateTime > this.throttleLimit) {
-        onTelemetryReceived(data);
-        this.lastUpdateTime = now;
+    const parseCompactTelemetry = (raw) => {
+      if (typeof raw !== "string") return null;
+
+      const obj = {};
+      const payload = raw.includes("|") ? raw.split("|").slice(1).join("|") : raw;
+      const kvPairs = payload.split(",");
+
+      kvPairs.forEach((pair) => {
+        const [rawKey, rawValue] = pair.split(":");
+        if (!rawKey || rawValue === undefined) return;
+
+        const key = rawKey.trim();
+        const value = parseFloat(rawValue);
+        if (Number.isNaN(value)) return;
+
+        const match = key.match(/^([a-zA-Z]+)(\d+)$/i);
+        if (!match) return;
+
+        const prefix = match[1].toLowerCase();
+        const index = match[2];
+
+        if (prefix === "bt") {
+          if (!obj.temperature) obj.temperature = {};
+          obj.temperature[`bt${index}`] = value;
+        } else if (prefix === "i") {
+          if (!obj.current) obj.current = {};
+          obj.current[`i${index}`] = value;
+        } else if (prefix === "v") {
+          if (!obj.voltage) obj.voltage = {};
+          obj.voltage[`v${index}`] = value;
+        } else if (prefix === "p") {
+          if (!obj.pressure) obj.pressure = {};
+          obj.pressure[`p${index}`] = value;
+        }
+      });
+
+      return Object.keys(obj).length ? obj : null;
+    };
+
+    const normalizeObjectTelemetry = (payload) => {
+      if (!payload || typeof payload !== "object") return null;
+
+      const normalized = {};
+      mergeTelemetry(normalized, payload);
+
+      // Nested obje anahtarlarını normalize et (ör. BT1 -> bt1, P2 -> p2)
+      ["temperature", "pressure", "current", "voltage", "motion", "power"].forEach((groupName) => {
+        const groupEntry = Object.entries(payload).find(([key]) => key.toLowerCase() === groupName);
+        if (!groupEntry) return;
+
+        const group = groupEntry[1];
+        if (!group || typeof group !== "object" || Array.isArray(group)) return;
+
+        if (!normalized[groupName]) normalized[groupName] = {};
+        Object.entries(group).forEach(([k, v]) => {
+          const normalizedKey = String(k).toLowerCase();
+          normalized[groupName][normalizedKey] = v;
+        });
+      });
+
+      // Üst seviyede gelen "P1", "BT2" gibi alanları da normalize et
+      Object.entries(payload).forEach(([rawKey, rawValue]) => {
+        const key = String(rawKey);
+        const value = Number(rawValue);
+        if (Number.isNaN(value)) return;
+
+        const match = key.match(/^([a-zA-Z]+)(\d+)$/i);
+        if (!match) return;
+
+        const compact = parseCompactTelemetry(`${key}:${value}`);
+        if (compact) mergeTelemetry(normalized, compact);
+      });
+
+      // Obje içindeki olası raw string alanlarını da parse et
+      Object.values(payload).forEach((val) => {
+        if (typeof val !== "string") return;
+        const compact = parseCompactTelemetry(val);
+        if (compact) mergeTelemetry(normalized, compact);
+      });
+
+      return Object.keys(normalized).length ? normalized : null;
+    };
+
+    this.connection.on("telemetry", (data) => {
+      let parsedData = null;
+
+      if (typeof data === "object" && data !== null) {
+        parsedData = normalizeObjectTelemetry(data);
+      } else if (typeof data === "string") {
+        try {
+          parsedData = normalizeObjectTelemetry(JSON.parse(data));
+        } catch (e) {
+          parsedData = parseCompactTelemetry(data);
+        }
       }
+
+      if (parsedData) onTelemetryReceived(parsedData);
     });
 
     this.connection.onreconnecting((err) => {

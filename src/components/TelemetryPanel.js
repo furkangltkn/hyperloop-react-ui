@@ -4,19 +4,19 @@ import NeonGauge from "./NeonGauge";
 import NeonHorizontalBar from "./NeonHorizontalBar";
 
 const getVal = (obj, path, fallback = 0) => {
-  const val = path.split('.').reduce((acc, part) => acc && acc[part], obj);
-  return val !== undefined ? val : fallback;
+  const val = path.split('.').reduce((acc, part) => (acc != null ? acc[part] : undefined), obj);
+  return val ?? fallback;
 };
 
 export default function TelemetryPanel({ telemetry, mode, darkMode = true }) {
-  
+
   // Stil: Matris Kutusu
   const MatrixBox = ({ value, unit = "" }) => (
-    <Box sx={{ 
-      flex: 1, background: "rgba(15, 23, 42, 0.4)", border: "1px solid rgba(255,255,255,0.03)", 
-      borderRadius: 1, display: "flex", justifyContent: "center", alignItems: "center", height: 38 
+    <Box sx={{
+      flex: 1, background: "rgba(15, 23, 42, 0.4)", border: "1px solid rgba(255,255,255,0.03)",
+      borderRadius: 1, display: "flex", justifyContent: "center", alignItems: "center", height: 28
     }}>
-      <Typography sx={{ fontSize: 14, color: "#fff", fontWeight: "bold", fontFamily: "monospace" }}>
+      <Typography sx={{ fontSize: 13, color: "#fff", fontWeight: "bold", fontFamily: "monospace" }}>
         {typeof value === 'number' ? value.toFixed(2) : value}{unit}
       </Typography>
     </Box>
@@ -24,9 +24,9 @@ export default function TelemetryPanel({ telemetry, mode, darkMode = true }) {
 
   // Stil: Küçük Veri Kutusu
   const SmallDataBox = ({ label, value, color = "#fff" }) => (
-    <Box sx={{ 
-      flex: 1, background: "rgba(30, 41, 59, 0.5)", border: "1px solid rgba(255,255,255,0.05)", 
-      borderRadius: 1, display: "flex", flexDirection: "column", alignItems: "center", py: 0.8, minWidth: 42
+    <Box sx={{
+      flex: 1, background: "rgba(30, 41, 59, 0.5)", border: "1px solid rgba(255,255,255,0.05)",
+      borderRadius: 1, display: "flex", flexDirection: "column", alignItems: "center", py: 0.5, minWidth: 42
     }}>
       {label && <Typography sx={{ fontSize: 7, color: "#64748b", fontWeight: "bold" }}>{label}</Typography>}
       <Typography sx={{ fontSize: 11, color: color, fontWeight: "bold", fontFamily: "monospace" }}>{value}</Typography>
@@ -35,7 +35,7 @@ export default function TelemetryPanel({ telemetry, mode, darkMode = true }) {
 
   // Grup Başlığı
   const GroupHeader = ({ title }) => (
-    <Box sx={{ background: "rgba(255,255,255,0.05)", py: 0.5, px: 2, borderRadius: 1, mb: 1.5, width: "fit-content" }}>
+    <Box sx={{ background: "rgba(255,255,255,0.05)", py: 0.5, px: 2, borderRadius: 1, mb: 1, width: "fit-content" }}>
       <Typography sx={{ fontSize: 10, color: "#bb9af7", fontWeight: "bold", letterSpacing: 1 }}>{title}</Typography>
     </Box>
   );
@@ -44,21 +44,21 @@ export default function TelemetryPanel({ telemetry, mode, darkMode = true }) {
 
   return (
     <Box sx={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", p: 1, gap: 1.5, boxSizing: "border-box" }}>
-      
+
       <Box sx={{ display: "grid", gridTemplateColumns: "1fr 320px", flexGrow: 1, gap: 2, minHeight: 0 }}>
-        
+
         {/* SOL KOLON: NAVİGASYON + KAYDIRILABİLİR BATARYA DETAYLARI */}
-        <Box sx={{ 
-          height: "100%", display: "flex", flexDirection: "column", gap: 2, 
+        <Box sx={{
+          height: "100%", display: "flex", flexDirection: "column", gap: 1,
           overflowY: "auto", pr: 1,
           "&::-webkit-scrollbar": { width: "4px" },
           "&::-webkit-scrollbar-thumb": { background: "rgba(255,255,255,0.1)", borderRadius: 4 }
         }}>
-          
+
           {/* 1. NAVİGASYON SİSTEMİ */}
-          <Box sx={{ background: "rgba(26, 27, 38, 0.4)", p: 2.5, borderRadius: 2, border: "1px solid rgba(255,255,255,0.05)" }}>
-            <Typography sx={{ fontSize: 11, color: "#7dcfff", fontWeight: "bold", letterSpacing: 2, mb: 2 }}>NAVİGASYON SİSTEMİ</Typography>
-            <Box sx={{ display: "flex", mb: 1, ml: "100px" }}>
+          <Box sx={{ background: "rgba(26, 27, 38, 0.4)", p: 1.5, borderRadius: 2, border: "1px solid rgba(255,255,255,0.05)" }}>
+            <Typography sx={{ fontSize: 11, color: "#7dcfff", fontWeight: "bold", letterSpacing: 2, mb: 1 }}>NAVİGASYON SİSTEMİ</Typography>
+            <Box sx={{ display: "flex", mb: 0.5, ml: "100px" }}>
               {["X", "Y", "Z"].map(axis => <Typography key={axis} sx={{ flex: 1, textAlign: "center", color: "#565f89", fontSize: 12, fontWeight: "bold" }}>{axis}</Typography>)}
             </Box>
             {[
@@ -66,7 +66,7 @@ export default function TelemetryPanel({ telemetry, mode, darkMode = true }) {
               { label: "KONUM (m)", vals: ["motion.lx", "motion.ly", "motion.lz"] },
               { label: "İVME (g)", vals: ["motion.ax", "motion.ay", "motion.az"] }
             ].map((row, idx) => (
-              <Box key={idx} sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: idx === 2 ? 0 : 1.5 }}>
+              <Box key={idx} sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: idx === 2 ? 0 : 0.8 }}>
                 <Typography sx={{ width: 100, color: "#94a3b8", fontSize: 11, fontWeight: "bold" }}>{row.label}</Typography>
                 {row.vals.map((path, i) => <MatrixBox key={i} value={getVal(telemetry, path)} />)}
               </Box>
@@ -74,46 +74,100 @@ export default function TelemetryPanel({ telemetry, mode, darkMode = true }) {
           </Box>
 
           {/* 2. BATARYA SICAKLIK GRUBU */}
-          <Box sx={{ background: "rgba(26, 27, 38, 0.4)", p: 2, borderRadius: 2, border: "1px solid rgba(255,255,255,0.05)" }}>
+          <Box sx={{ background: "rgba(26, 27, 38, 0.4)", p: 1.5, borderRadius: 2, border: "1px solid rgba(255,255,255,0.05)" }}>
             <GroupHeader title="BATARYA SICAKLIK" />
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
               <Typography sx={{ width: 80, fontSize: 10, color: "#565f89", fontWeight: "bold" }}>HV1:</Typography>
-              {[1,2,3,4,5,6,7].map(i => <SmallDataBox key={i} value={getVal(telemetry, `temperature.bt${i}`, "--")} />)}
+              {[3,4,5,6,7,8,9].map(i => <SmallDataBox key={i} value={getVal(telemetry, `temperature.bt${i}`, "--")} />)}
             </Box>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
               <Typography sx={{ width: 80, fontSize: 10, color: "#565f89", fontWeight: "bold" }}>HV2:</Typography>
-              {[8,9,10,11,12,13,14].map(i => <SmallDataBox key={i} value={getVal(telemetry, `temperature.bt${i}`, "--")} color="#4fc3f7" />)}
+              {[10,11,12,13,14,15,16].map(i => <SmallDataBox key={i} value={getVal(telemetry, `temperature.bt${i}`, "--")} color="#4fc3f7" />)}
             </Box>
             {/* Alt Sistem & Acil Durum Satırı */}
-            <Box sx={{ display: "flex", gap: 4, ml: 1, mt: 1 }}>
-              <Typography sx={{ fontSize: 10, color: "#565f89", fontWeight: "bold" }}>Alt Sistem: <span style={{color: "#00e676"}}>{getVal(telemetry, "temperature.bt15", "--")}</span></Typography>
-              <Typography sx={{ fontSize: 10, color: "#565f89", fontWeight: "bold" }}>Acil Durum: <span style={{color: "#7dcfff"}}>{getVal(telemetry, "temperature.bt16", "--")}</span></Typography>
+            <Box sx={{ display: "flex", gap: 4, ml: 1, mt: 0.5 }}>
+              <Typography sx={{ fontSize: 10, color: "#565f89", fontWeight: "bold" }}>Alt Sistem: <span style={{color: "#00e676"}}>{getVal(telemetry, "temperature.bt1", "--")}</span></Typography>
+              <Typography sx={{ fontSize: 10, color: "#565f89", fontWeight: "bold" }}>Acil Durum: <span style={{color: "#7dcfff"}}>{getVal(telemetry, "temperature.bt2", "--")}</span></Typography>
             </Box>
           </Box>
 
           {/* 3. BATARYA VOLTAJ GRUBU */}
-          <Box sx={{ background: "rgba(26, 27, 38, 0.4)", p: 2, borderRadius: 2, border: "1px solid rgba(255,255,255,0.05)" }}>
+          <Box sx={{ background: "rgba(26, 27, 38, 0.4)", p: 1.5, borderRadius: 2, border: "1px solid rgba(255,255,255,0.05)" }}>
             <GroupHeader title="BATARYA VOLTAJ" />
+
             {[1, 2].map(rowIdx => (
-              <Box key={rowIdx} sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
-                <Typography sx={{ width: 80, fontSize: 10, color: "#565f89", fontWeight: "bold" }}>HV{rowIdx}:</Typography>
-                {[...Array(7)].map((_, i) => <SmallDataBox key={i} value="--" />)}
+              <Box
+                key={rowIdx}
+                sx={{
+                  display: "flex",
+                  alignItems: "flex-start", // Yazının ilk satır başında sabit kalması için
+                  gap: 1,
+                  mb: 1
+                }}
+              >
+                {/* HV1 veya HV2 etiketi */}
+                <Typography sx={{
+                  width: 60,
+                  minWidth: 60,
+                  fontSize: 10,
+                  color: "#565f89",
+                  fontWeight: "bold",
+                  mt: 1 // Kutularla hizalamak için küçük bir üst boşluk
+                }}>
+                  HV{rowIdx}:
+                </Typography>
+
+                {/* Kutuların kapsayıcısı */}
+                <Box sx={{
+                  display: "flex",
+                  flexWrap: "wrap", // Sığmayan kutuları alt satıra atar
+                  gap: 1,
+                  flex: 1
+                }}>
+                  {[...Array(13)].map((_, i) => {
+                    // rowIdx 1 iken: bv1...bv13 | rowIdx 2 iken: bv14...bv26
+                    const sensorId = (rowIdx - 1) * 13 + (i + 1);
+
+                    return (
+                      <Box key={i} sx={{ flex: "0 0 auto" }}> {/* Kutuların orijinal boyutunu korur */}
+                        <SmallDataBox
+                          value={getVal(telemetry, `voltage.v${sensorId}`, "--")}
+                        />
+                      </Box>
+                    );
+                  })}
+                </Box>
               </Box>
             ))}
+
             {/* Alt Sistem & Acil Durum Satırı */}
-            <Box sx={{ display: "flex", gap: 4, ml: 1, mt: 1 }}>
-              <Typography sx={{ fontSize: 10, color: "#565f89", fontWeight: "bold" }}>Alt Sistem: <span style={{color: "#00e676"}}>--</span></Typography>
-              <Typography sx={{ fontSize: 10, color: "#565f89", fontWeight: "bold" }}>Acil Durum: <span style={{color: "#7dcfff"}}>--</span></Typography>
+            <Box sx={{ display: "flex", gap: 4, ml: 1, mt: 0.5 }}>
+              <Typography sx={{ fontSize: 10, color: "#565f89", fontWeight: "bold" }}>
+                Alt Sistem: <span style={{color: "#00e676"}}>{getVal(telemetry, "voltage.v27", "--")}</span>
+              </Typography>
+              <Typography sx={{ fontSize: 10, color: "#565f89", fontWeight: "bold" }}>
+                Acil Durum: <span style={{color: "#7dcfff"}}>{getVal(telemetry, "voltage.v28", "--")}</span>
+              </Typography>
             </Box>
           </Box>
 
           {/* 4. BATARYA AKIM GRUBU */}
-          <Box sx={{ background: "rgba(26, 27, 38, 0.4)", p: 2, borderRadius: 2, border: "1px solid rgba(255,255,255,0.05)" }}>
+          <Box sx={{ background: "rgba(26, 27, 38, 0.4)", p: 1.5, borderRadius: 2, border: "1px solid rgba(255,255,255,0.05)" }}>
             <GroupHeader title="BATARYA AKIM" />
             <Box sx={{ display: "flex", gap: 4, ml: 2 }}>
-              <Typography sx={{ fontSize: 10, color: "#565f89", fontWeight: "bold" }}>HV: <span style={{color: "#fff"}}>--</span></Typography>
-              <Typography sx={{ fontSize: 10, color: "#565f89", fontWeight: "bold" }}>Alt Sistem: <span style={{color: "#00e676"}}>--</span></Typography>
-              <Typography sx={{ fontSize: 10, color: "#565f89", fontWeight: "bold" }}>Acil Durum: <span style={{color: "#7dcfff"}}>--</span></Typography>
+
+              <Typography sx={{ fontSize: 10, color: "#565f89", fontWeight: "bold" }}>
+                HV: <span style={{color: "#fff"}}>{getVal(telemetry, "current.i1", "--")}</span>
+              </Typography>
+
+              <Typography sx={{ fontSize: 10, color: "#565f89", fontWeight: "bold" }}>
+                Alt Sistem: <span style={{color: "#00e676"}}>{getVal(telemetry, "current.i2", "--")}</span>
+              </Typography>
+
+              <Typography sx={{ fontSize: 10, color: "#565f89", fontWeight: "bold" }}>
+                Acil Durum: <span style={{color: "#7dcfff"}}>{getVal(telemetry, "current.i3", "--")}</span>
+              </Typography>
+
             </Box>
           </Box>
         </Box>
@@ -123,37 +177,62 @@ export default function TelemetryPanel({ telemetry, mode, darkMode = true }) {
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5, px: 1 }}>
              <Box sx={{ display: "flex", flexDirection: "column", gap: 1.2 }}>
                 <NeonHorizontalBar value={getVal(telemetry, "power.pw1")} max={150} label="GÜÇ TÜKETİMİ" unit="kW" color="#b388ff" />
-                <NeonHorizontalBar value={getVal(telemetry, "pressure.p1")} max={120} label="FREN BASINCI" unit="kPa" color="#29b6f6" />
+                <Box sx={{ display: "flex", gap: 1 }}>
+                  <Box sx={{ flex: 1 }}>
+                    <NeonHorizontalBar value={getVal(telemetry, "pressure.p1")} max={120} label="FREN BASINCI" unit="kPa" color="#29b6f6" />
+                  </Box>
+                  <Box sx={{ flex: 1 }}>
+                    <NeonHorizontalBar value={getVal(telemetry, "pressure.p2")} max={120} label="FREN BASINCI" unit="kPa" color="#29b6f6" />
+                  </Box>
+                </Box>
              </Box>
              <Box>
                 <Typography sx={{ fontSize: 9, color: "#94a3b8", mb: 0.5, textAlign: "center" }}>KAPSÜL İÇ SICAKLIKLARI</Typography>
                 <Box sx={{ display: "flex", gap: 0.5 }}>
-                   <SmallDataBox label="B1" value={getVal(telemetry, "temperature.ct1", "--")} />
-                   <SmallDataBox label="B2" value={getVal(telemetry, "temperature.ct2", "--")} />
-                   <SmallDataBox label="B3" value={getVal(telemetry, "temperature.ct3", "--")} />
+                   <SmallDataBox label="B1" value={getVal(telemetry, "motion.mt1", "--")} />
+                   <SmallDataBox label="B2" value={getVal(telemetry, "motion.mt2", "--")} />
+                   <SmallDataBox label="B3" value={getVal(telemetry, "motion.mt3", "--")} />
                 </Box>
              </Box>
              <Box>
                 <Typography sx={{ fontSize: 9, color: "#94a3b8", mb: 0.5, textAlign: "center" }}>BATARYA SICAKLIKLARI</Typography>
                 <Box sx={{ display: "flex", gap: 0.5 }}>
-                   <SmallDataBox label="YV-1" value={getVal(telemetry, "temperature.bt1", "--")} color="#4fc3f7" />
-                   <SmallDataBox label="YV-2" value={getVal(telemetry, "temperature.bt2", "--")} color="#4fc3f7" />
-                   <SmallDataBox label="Acil Durum" value={getVal(telemetry, "temperature.bt3", "--")} color="#4fc3f7" />
-                   <SmallDataBox label="Alt Sistem " value={getVal(telemetry, "temperature.bt4", "--")} color="#4fc3f7" />
+                   <SmallDataBox label="YV-1" value={getVal(telemetry, "temperature.bt3", "--")} color="#4fc3f7" />
+                   <SmallDataBox label="YV-2" value={getVal(telemetry, "temperature.bt4", "--")} color="#4fc3f7" />
+                   <SmallDataBox label="Acil Durum" value={getVal(telemetry, "temperature.bt1", "--")} color="#4fc3f7" />
+                   <SmallDataBox label="Alt Sistem " value={getVal(telemetry, "temperature.bt2", "--")} color="#4fc3f7" />
                 </Box>
              </Box>
           </Box>
-          
-          {/* REFLEKTÖR SAYACI KUTUSU */}
+
+          {/* REFLEKTÖR SAYACI KUTULARI */}
           <Box sx={{ px: 1, mt: 2 }}>
-            <Box sx={{ background: "rgba(15, 23, 42, 0.6)", border: "1px solid rgba(125, 207, 255, 0.2)", borderRadius: 1, py: 1, display: "flex", flexDirection: "column", alignItems: "center" }}>
-                <Typography sx={{ fontSize: 8, color: "#7dcfff", fontWeight: "bold", letterSpacing: 1 }}>REFLEKTÖR SAYACI</Typography>
-                <Typography sx={{ fontSize: 18, color: "#fff", fontWeight: "bold", fontFamily: "monospace" }}>
-                  {getVal(telemetry, "navigation.reflectorCount", 0)}
-                </Typography>
+            <Box sx={{ display: "flex", gap: 0.8 }}>
+              {["motion.rc1", "motion.rc2", "motion.rc3"].map((path, idx) => (
+                <Box
+                  key={path}
+                  sx={{
+                    flex: 1,
+                    background: "rgba(15, 23, 42, 0.6)",
+                    border: "1px solid rgba(125, 207, 255, 0.2)",
+                    borderRadius: 1,
+                    py: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center"
+                  }}
+                >
+                  <Typography sx={{ fontSize: 8, color: "#7dcfff", fontWeight: "bold", letterSpacing: 1 }}>
+                    REFLEKTÖR {idx + 1}
+                  </Typography>
+                  <Typography sx={{ fontSize: 18, color: "#fff", fontWeight: "bold", fontFamily: "monospace" }}>
+                    {getVal(telemetry, path, 0)}
+                  </Typography>
+                </Box>
+              ))}
             </Box>
           </Box>
-          
+
           {/* KONUM KUTUSU */}
           <Box sx={{ px: 1, mt: 2 }}>
              <Box sx={{ background: "rgba(15, 23, 42, 0.6)", border: "1px solid rgba(125, 207, 255, 0.2)", borderRadius: 1, py: 1, display: "flex", flexDirection: "column", alignItems: "center" }}>
@@ -167,19 +246,19 @@ export default function TelemetryPanel({ telemetry, mode, darkMode = true }) {
 
           {/* HIZ KUTULARI */}
           <Box sx={{ display: "flex", gap: 1.2, px: 1, pb: 9.5, height: 125, alignItems: "center", justifyContent: "space-between" }}>
-            <Box sx={{ 
-              flex: 1, maxWidth: "148px", height: "100%", background: "rgba(30, 41, 59, 0.3)", 
-              border: "1px solid rgba(255,255,255,0.1)", borderRadius: 2, display: "flex", 
-              alignItems: "center", justifyContent: "center", boxSizing: "border-box" 
+            <Box sx={{
+              flex: 1, maxWidth: "148px", height: "100%", background: "rgba(30, 41, 59, 0.3)",
+              border: "1px solid rgba(255,255,255,0.1)", borderRadius: 2, display: "flex",
+              alignItems: "center", justifyContent: "center", boxSizing: "border-box"
             }}>
               <NeonGauge value={getVal(telemetry, "motion.sx")} max={300} label="ANLIK HIZ" color="#00e676" />
             </Box>
-            <Box sx={{ 
-              flex: 1, maxWidth: "148px", height: "100%", background: "rgba(30, 41, 59, 0.3)", 
-              border: "1px solid rgba(255,255,255,0.1)", borderRadius: 2, display: "flex", 
-              alignItems: "center", justifyContent: "center", boxSizing: "border-box" 
+            <Box sx={{
+              flex: 1, maxWidth: "148px", height: "100%", background: "rgba(30, 41, 59, 0.3)",
+              border: "1px solid rgba(255,255,255,0.1)", borderRadius: 2, display: "flex",
+              alignItems: "center", justifyContent: "center", boxSizing: "border-box"
             }}>
-              <NeonGauge value={getVal(telemetry, "motion.avgSpeed")} max={300} label="ORT. HIZ" color="#29b6f6" />
+              <NeonGauge value={getVal(telemetry, "motion.as")} max={300} label="ORT. HIZ" color="#29b6f6" />
             </Box>
           </Box>
         </Box>

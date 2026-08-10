@@ -2,7 +2,9 @@ import React from "react";
 import { Box, Typography } from "@mui/material";
 
 export default function NeonHorizontalBar({ value = 0, max = 100, label = "GÜÇ", unit = "kW", color = "#b388ff" }) {
-  const safeValue = Math.min(Math.max(value, 0), max);
+  const numericValue = Number(value);
+  const resolvedValue = Number.isFinite(numericValue) ? numericValue : 0;
+  const safeValue = Math.min(Math.max(resolvedValue, 0), max);
   const percentage = (safeValue / max) * 100;
   const isDanger = percentage > 90; 
   const activeColor = isDanger ? "#ff4d4d" : color;
@@ -28,7 +30,7 @@ export default function NeonHorizontalBar({ value = 0, max = 100, label = "GÜÇ
           {label}
         </Typography>
         <Typography sx={{ color: activeColor, fontSize: 14, fontWeight: "bold", textShadow: `0 0 8px ${activeColor}` }}>
-          {Math.round(value)} {unit}
+          {resolvedValue.toFixed(2)} {unit}
         </Typography>
       </Box>
 
