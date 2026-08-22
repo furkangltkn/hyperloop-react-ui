@@ -2,6 +2,52 @@ import * as signalR from "@microsoft/signalr";
 
 const HUB_URL = "http://localhost:5120/telemetry";
 
+const normalizeConnectionStatus = (status) => {
+  if (typeof status === "boolean") {
+    return {
+      raspberryConnected: status,
+      reason: status ? "connected" : "disconnected"
+    };
+  }
+
+  if (typeof status === "string") {
+    const normalized = status.trim().toLowerCase();
+    const connected = ["connected", "online", "true", "1", "bagli", "bağlı"].includes(normalized);
+    const disconnected = ["disconnected", "offline", "false", "0", "bagli_degil", "bağlı_değil"].includes(normalized);
+
+    if (connected || disconnected) {
+      return {
+        raspberryConnected: connected,
+        reason: normalized
+      };
+    }
+
+    return null;
+  }
+
+  if (!status || typeof status !== "object") return null;
+
+  const connectedValue =
+    status.raspberryConnected ??
+    status.RaspberryConnected ??
+    status.connected ??
+    status.Connected ??
+    status.isConnected ??
+    status.IsConnected;
+
+  if (connectedValue === undefined || connectedValue === null) return null;
+
+  const normalizedValue = typeof connectedValue === "string"
+    ? ["connected", "online", "true", "1", "bagli", "bağlı"].includes(connectedValue.trim().toLowerCase())
+    : Boolean(connectedValue);
+
+  return {
+    ...status,
+    raspberryConnected: normalizedValue,
+    reason: status.reason ?? status.Reason ?? (normalizedValue ? "connected" : "disconnected")
+  };
+};
+
 class TelemetryService {
   constructor() {
     this.connection = new signalR.HubConnectionBuilder()
@@ -141,8 +187,12 @@ class TelemetryService {
     });
 
     this.connection.on("connectionStatus", (status) => {
-      if (status && typeof status === "object") {
-        onRaspberryStatusChange?.(status);
+      const normalizedStatus = normalizeConnectionStatus(status);
+
+      if (normalizedStatus) {
+        onRaspberryStatusChange?.(normalizedStatus);
+      } else {
+        console.warn("Bilinmeyen Raspberry bağlantı durumu:", status);
       }
     });
 
