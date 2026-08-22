@@ -10,7 +10,7 @@ const playSynthSound = (type) => {
   /* Mevcut ses fonksiyonun */
 };
 
-function ControlPanel({ darkMode = true, autonomous, setAutonomous }) {
+function ControlPanel({ darkMode = true, autonomous, setAutonomous, raspberryConnected = false, resetVersion = 0 }) {
   const [brake, setBrake] = useState(false);
   const [frontBrake, setFrontBrake] = useState(false);
   const [rearBrake, setRearBrake] = useState(false);
@@ -19,6 +19,7 @@ function ControlPanel({ darkMode = true, autonomous, setAutonomous }) {
   const [emergency, setEmergency] = useState(false);
   const [time, setTime] = useState(new Date());
   const panelWidth = 160;
+  const commandDisabled = !raspberryConnected;
 
   const colors = {
     forward: darkMode ? "#7dcfff" : "#0277bd",
@@ -35,6 +36,17 @@ function ControlPanel({ darkMode = true, autonomous, setAutonomous }) {
     const timer = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    if (resetVersion === 0) return;
+
+    setBrake(false);
+    setFrontBrake(false);
+    setRearBrake(false);
+    setForward(false);
+    setBackward(false);
+    setEmergency(false);
+  }, [resetVersion]);
 
   const systemStatus = useMemo(() => {
     if (emergency) {
@@ -67,11 +79,25 @@ function ControlPanel({ darkMode = true, autonomous, setAutonomous }) {
     justifyContent: "center", alignItems: "center", gap: 1, transition: "all 0.2s",
     boxSizing: "border-box", borderRadius: 2, textTransform: "none"
   };
-  const exitAutonomousMode = () => {
-    if (autonomous) {
-      setAutonomous(false);
-      sendCommand("AUTONOMOUS_OFF");
+  const runCommand = async (command, onSuccess) => {
+    if (commandDisabled) return false;
+
+    try {
+      await sendCommand(command);
+      onSuccess?.();
+      return true;
+    } catch (error) {
+      console.error(`${command} komutu gönderilemedi:`, error);
+      return false;
     }
+  };
+
+  const exitAutonomousMode = async () => {
+    if (autonomous) {
+      return await runCommand("AUTONOMOUS_OFF", () => setAutonomous(false));
+    }
+
+    return true;
   };
 
   return (
@@ -101,15 +127,17 @@ function ControlPanel({ darkMode = true, autonomous, setAutonomous }) {
           <Button
             variant="contained"
             disableElevation
-            onClick={() => {
-              exitAutonomousMode();
+            disabled={commandDisabled}
+            onClick={async () => {
+              if (!await exitAutonomousMode()) return;
               const nextFrontBrake = !frontBrake;
-              setFrontBrake(nextFrontBrake);
-              if (nextFrontBrake) {
-                setForward(false);
-                setBackward(false);
-              }
-              sendCommand("FRONT_BRAKE");
+              await runCommand("FRONT_BRAKE", () => {
+                setFrontBrake(nextFrontBrake);
+                if (nextFrontBrake) {
+                  setForward(false);
+                  setBackward(false);
+                }
+              });
             }}
             sx={{
               ...sciFiStyle,
@@ -126,15 +154,17 @@ function ControlPanel({ darkMode = true, autonomous, setAutonomous }) {
           <Button
             variant="contained"
             disableElevation
-            onClick={() => {
-              exitAutonomousMode();
+            disabled={commandDisabled}
+            onClick={async () => {
+              if (!await exitAutonomousMode()) return;
               const nextRearBrake = !rearBrake;
-              setRearBrake(nextRearBrake);
-              if (nextRearBrake) {
-                setForward(false);
-                setBackward(false);
-              }
-              sendCommand("REAR_BRAKE");
+              await runCommand("REAR_BRAKE", () => {
+                setRearBrake(nextRearBrake);
+                if (nextRearBrake) {
+                  setForward(false);
+                  setBackward(false);
+                }
+              });
             }}
             sx={{
               ...sciFiStyle,
@@ -153,11 +183,13 @@ function ControlPanel({ darkMode = true, autonomous, setAutonomous }) {
         <Button
           variant="contained"
           disableElevation
-          onClick={() => {
+          disabled={commandDisabled}
+          onClick={async () => {
             playSynthSound("forward");
-            setForward(true);
-            setBackward(false);
-            sendCommand("FORWARD");
+            await runCommand("FORWARD", () => {
+              setForward(true);
+              setBackward(false);
+            });
           }}
           sx={{
             ...sciFiStyle,
@@ -173,16 +205,18 @@ function ControlPanel({ darkMode = true, autonomous, setAutonomous }) {
         <Button
           variant="contained"
           disableElevation
-          onClick={() => {
+          disabled={commandDisabled}
+          onClick={async () => {
             playSynthSound("brake");
-            exitAutonomousMode();
+            if (!await exitAutonomousMode()) return;
             const nextBrake = !brake;
-            setBrake(nextBrake);
-            if (nextBrake) {
-              setForward(false);
-              setBackward(false);
-            }
-            sendCommand("BRAKE");
+            await runCommand("BRAKE", () => {
+              setBrake(nextBrake);
+              if (nextBrake) {
+                setForward(false);
+                setBackward(false);
+              }
+            });
           }}
           sx={{ ...sciFiStyle, background: brake ? (darkMode ? "rgba(224, 175, 104, 0.15)" : "rgba(180, 83, 9, 0.15)") : (darkMode ? "rgba(224, 175, 104, 0.08)" : "rgba(180, 83, 9, 0.08)"), border: `1px solid ${darkMode ? "rgba(224, 175, 104, 0.2)" : "rgba(180, 83, 9, 0.2)"}`, color: colors.brake, "&:hover": { background: darkMode ? "rgba(224, 175, 104, 0.15)" : "rgba(180, 83, 9, 0.15)" } }}
         >
@@ -192,11 +226,13 @@ function ControlPanel({ darkMode = true, autonomous, setAutonomous }) {
         <Button
           variant="contained"
           disableElevation
-          onClick={() => {
+          disabled={commandDisabled}
+          onClick={async () => {
             playSynthSound("backward");
-            setBackward(true);
-            setForward(false);
-            sendCommand("BACKWARD");
+            await runCommand("BACKWARD", () => {
+              setBackward(true);
+              setForward(false);
+            });
           }}
           sx={{
             ...sciFiStyle,
@@ -212,16 +248,18 @@ function ControlPanel({ darkMode = true, autonomous, setAutonomous }) {
         <Button
           variant="contained"
           disableElevation
-          onClick={() => {
+          disabled={commandDisabled}
+          onClick={async () => {
             playSynthSound("emergency");
-            exitAutonomousMode();
+            if (!await exitAutonomousMode()) return;
             const nextEmergency = !emergency;
-            setEmergency(nextEmergency);
-            if (nextEmergency) {
-              setForward(false);
-              setBackward(false);
-            }
-            sendCommand("EMERGENCY");
+            await runCommand("EMERGENCY", () => {
+              setEmergency(nextEmergency);
+              if (nextEmergency) {
+                setForward(false);
+                setBackward(false);
+              }
+            });
           }}
           sx={{ ...sciFiStyle, mt: 0.5, background: emergency ? colors.emergency : (darkMode ? "rgba(247, 118, 142, 0.15)" : "rgba(190, 18, 60, 0.1)"), color: emergency ? (darkMode ? "#1a1b26" : "#ffffff") : colors.emergency, border: `1px solid ${emergency ? "transparent" : (darkMode ? "rgba(247, 118, 142, 0.3)" : "rgba(190, 18, 60, 0.3)")}`, "&:hover": { background: colors.emergency, color: darkMode ? "#1a1b26" : "#ffffff" } }}
         >
@@ -230,7 +268,16 @@ function ControlPanel({ darkMode = true, autonomous, setAutonomous }) {
 
         <Box sx={{ width: "100%", mt: 0.5, py: 0.5, background: "rgba(0,0,0,0.04)", borderRadius: 2, textAlign: "center", border: `1px solid ${colors.border}` }}>
           <Typography color={colors.textMuted} sx={{ fontSize: 10, mb: 0.5 }}>OTONOM MOD</Typography>
-          <Switch size="small" checked={autonomous} onChange={(e) => { const val = e.target.checked; setAutonomous(val); sendCommand(val ? "AUTONOMOUS_ON" : "AUTONOMOUS_OFF"); }} sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: colors.forward }, '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: colors.forward } }} />
+          <Switch
+            size="small"
+            checked={autonomous}
+            disabled={commandDisabled}
+            onChange={async (e) => {
+              const val = e.target.checked;
+              await runCommand(val ? "AUTONOMOUS_ON" : "AUTONOMOUS_OFF", () => setAutonomous(val));
+            }}
+            sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: colors.forward }, '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: colors.forward } }}
+          />
         </Box>
       </Box>
     </Box>

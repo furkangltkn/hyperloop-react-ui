@@ -10,19 +10,8 @@ const isObject = (item) => item && typeof item === "object" && !Array.isArray(it
 /**
  * İki veya daha fazla nesneyi derinlemesine birleştirir.
  */
-const shouldKeepPreviousValue = (prevValue, nextValue) => {
+const shouldKeepPreviousValue = (nextValue) => {
   if (nextValue === undefined || nextValue === null) return true;
-
-  // Backend'den kart bazli placeholder 0 geldiginde mevcut degeri koru.
-  if (
-    typeof prevValue === "number" &&
-    typeof nextValue === "number" &&
-    prevValue !== 0 &&
-    nextValue === 0
-  ) {
-    return true;
-  }
-
   return false;
 };
 
@@ -36,10 +25,9 @@ function mergeDeep(target, ...sources) {
         if (!target[key]) Object.assign(target, { [key]: {} });
         mergeDeep(target[key], source[key]);
       } else {
-        const prevValue = target[key];
         const nextValue = source[key];
 
-        if (!shouldKeepPreviousValue(prevValue, nextValue)) {
+        if (!shouldKeepPreviousValue(nextValue)) {
           Object.assign(target, { [key]: nextValue });
         }
       }
@@ -53,10 +41,20 @@ function App() {
   const [telemetry, setTelemetry] = useState({});
   const [lastUpdate, setLastUpdate] = useState(null);
   const [connectionStatus, setConnectionStatus] = useState("disconnected");
+  const [raspberryStatus, setRaspberryStatus] = useState({
+    raspberryConnected: false,
+    reason: "not_connected"
+  });
+  const [now, setNow] = useState(Date.now());
   const [autonomous, setAutonomous] = useState(false);
   
   // TEMA KONTROLÜ ARTIK BURADA! (Varsayılan: Karanlık)
   const [darkMode, setDarkMode] = useState(true); 
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     telemetryService.start(
@@ -67,15 +65,33 @@ function App() {
       },
       (status) => {
         setConnectionStatus(status);
+        if (status !== "connected") {
+          setRaspberryStatus((current) => ({
+            ...current,
+            raspberryConnected: false,
+            reason: "backend_" + status
+          }));
+        }
+      },
+      (status) => {
+        setRaspberryStatus(status);
       }
     );
     return () => telemetryService.stop();
   }, []);
 
+  const telemetryStale =
+    connectionStatus !== "connected" ||
+    !raspberryStatus?.raspberryConnected ||
+    !lastUpdate ||
+    now - lastUpdate.getTime() > 3000;
+
   return (
     <BrowserRouter>
       <Layout 
         connectionStatus={connectionStatus} 
+        raspberryStatus={raspberryStatus}
+        telemetryStale={telemetryStale}
         lastUpdate={lastUpdate} 
         telemetry={telemetry}
         autonomous={autonomous}

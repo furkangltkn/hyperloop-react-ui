@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Box, List, ListItemButton, IconButton, Typography } from "@mui/material";
 import DashboardIcon from "@mui/icons-material/Dashboard";
@@ -32,7 +32,14 @@ const OrientationIndicator = ({ label, value, color }) => (
   </Box>
 );
 
-export default function Layout({ children, lastUpdate, connectionStatus, telemetry, autonomous, setAutonomous, darkMode, setDarkMode }) {
+export default function Layout({ children, lastUpdate, connectionStatus, raspberryStatus, telemetryStale, telemetry, autonomous, setAutonomous, darkMode, setDarkMode }) {
+  const [resetVersion, setResetVersion] = useState(0);
+
+  const handleResetCompleted = () => {
+    setAutonomous(false);
+    setResetVersion((currentVersion) => currentVersion + 1);
+  };
+
   const themeColors = {
     bgLayout: darkMode ? "#16161e" : "#e6dec8",
     bgSidebar: darkMode ? "#1a1b26" : "#efe7d3",
@@ -62,7 +69,14 @@ export default function Layout({ children, lastUpdate, connectionStatus, telemet
       }}
     >
       <Box sx={{ height: 34, flexShrink: 0, borderBottom: `1px solid ${themeColors.borderColor}`, background: themeColors.bgSidebar }}>
-        <StatusBar lastUpdate={lastUpdate} connectionStatus={connectionStatus} autonomous={autonomous} />
+        <StatusBar
+          lastUpdate={lastUpdate}
+          connectionStatus={connectionStatus}
+          raspberryStatus={raspberryStatus}
+          telemetryStale={telemetryStale}
+          autonomous={autonomous}
+          onResetCompleted={handleResetCompleted}
+        />
       </Box>
 
       <Box sx={{ display: "flex", flexGrow: 1, overflow: "hidden", position: "relative" }}>
@@ -133,7 +147,86 @@ export default function Layout({ children, lastUpdate, connectionStatus, telemet
             flexDirection: "column"
           }}
         >
-          <Box sx={{ flex: 1, position: "relative", borderBottom: `1px solid ${themeColors.borderColor}` }}>
+          <Box
+            sx={{
+              flex: 1,
+              position: "relative",
+              borderBottom: `1px solid ${themeColors.borderColor}`,
+              overflow: "hidden"
+            }}
+          >
+            <Box
+              sx={{
+                position: "absolute",
+                top: 12,
+                left: 12,
+                bottom: 12,
+                right: 12,
+                background: "#000",
+                border: `1px solid ${themeColors.borderColor}`,
+                borderRadius: 2,
+                overflow: "hidden"
+              }}
+            >
+              {/* Kamera WebRTC Yayını */}
+              <iframe
+                src="http://localhost:8889/camera"
+                title="Hyperloop Camera"
+                allow="autoplay; fullscreen"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  border: "none",
+                  display: "block",
+                  backgroundColor: "#000"
+                }}
+              />
+
+              {/* CANLI göstergesi */}
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: 8,
+                  left: 10,
+                  zIndex: 20,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 0.6,
+                  px: 1,
+                  py: 0.4,
+                  borderRadius: 1,
+                  background: "rgba(0, 0, 0, 0.65)",
+                  backdropFilter: "blur(3px)",
+                  pointerEvents: "none"
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: "50%",
+                    background: "#f7768e",
+                    boxShadow: "0 0 6px #f7768e"
+                  }}
+                />
+
+                <Typography
+                  component="span"
+                  sx={{
+                    fontSize: 10,
+                    color: "#f7768e",
+                    fontWeight: "bold",
+                    letterSpacing: 1
+                  }}
+                >
+                  CANLI
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+
+
+          {/* <Box sx={{ flex: 1, position: "relative", borderBottom: `1px solid ${themeColors.borderColor}` }}>
             <Box
               sx={{
                 position: "absolute",
@@ -171,7 +264,7 @@ export default function Layout({ children, lastUpdate, connectionStatus, telemet
                 KAMERA SİSTEMİ ÇEVRİMDIŞI
               </Typography>
             </Box>
-          </Box>
+          </Box> */}
 
           <Box sx={{ flex: 1.2, display: "flex", flexDirection: "column", p: 1.5 }}>
             <Box
@@ -214,7 +307,13 @@ export default function Layout({ children, lastUpdate, connectionStatus, telemet
             pt: 4
           }}
         >
-          <ControlPanel darkMode={darkMode} autonomous={autonomous} setAutonomous={setAutonomous} />
+          <ControlPanel
+            darkMode={darkMode}
+            autonomous={autonomous}
+            setAutonomous={setAutonomous}
+            raspberryConnected={Boolean(raspberryStatus?.raspberryConnected)}
+            resetVersion={resetVersion}
+          />
 
           <Box sx={{ mt: "auto", pb: 4, px: 2, display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
             <Box

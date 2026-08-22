@@ -16,10 +16,11 @@ class TelemetryService {
     this.throttleLimit = 100;
   }
 
-  async start(onTelemetryReceived, onStatusChange) {
+  async start(onTelemetryReceived, onStatusChange, onRaspberryStatusChange) {
     console.log("SignalR start çağrıldı. State:", this.connection.state);
 
     this.connection.off("telemetry");
+    this.connection.off("connectionStatus");
 
     const mergeTelemetry = (target, source) => {
       if (!source || typeof source !== "object") return target;
@@ -48,6 +49,12 @@ class TelemetryService {
         const key = rawKey.trim();
         const value = parseFloat(rawValue);
         if (Number.isNaN(value)) return;
+
+        if (key.toUpperCase() === "ACIL_DURUM") {
+          if (!obj.emergency) obj.emergency = {};
+          obj.emergency.acil_durum = value;
+          return;
+        }
 
         const match = key.match(/^([a-zA-Z]+)(\d+)$/i);
         if (!match) return;
@@ -80,7 +87,7 @@ class TelemetryService {
       mergeTelemetry(normalized, payload);
 
       // Nested obje anahtarlarını normalize et (ör. BT1 -> bt1, P2 -> p2)
-      ["temperature", "pressure", "current", "voltage", "motion", "power"].forEach((groupName) => {
+      ["temperature", "pressure", "current", "voltage", "motion", "power", "emergency"].forEach((groupName) => {
         const groupEntry = Object.entries(payload).find(([key]) => key.toLowerCase() === groupName);
         if (!groupEntry) return;
 
@@ -131,6 +138,12 @@ class TelemetryService {
       }
 
       if (parsedData) onTelemetryReceived(parsedData);
+    });
+
+    this.connection.on("connectionStatus", (status) => {
+      if (status && typeof status === "object") {
+        onRaspberryStatusChange?.(status);
+      }
     });
 
     this.connection.onreconnecting((err) => {

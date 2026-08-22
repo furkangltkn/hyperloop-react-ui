@@ -1,6 +1,6 @@
 import { Box, Typography } from "@mui/material";
 
-export default function ConnectionStatus({ status }) {
+export default function ConnectionStatus({ status, label }) {
   const colors = {
     connected: "#22c55e",
     reconnecting: "#facc15",
@@ -40,7 +40,7 @@ export default function ConnectionStatus({ status }) {
           letterSpacing: 1
         }}
       >
-        {labels[status]}
+        {label || labels[status]}
       </Typography>
     </Box>
   );
