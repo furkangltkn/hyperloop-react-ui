@@ -46,7 +46,17 @@ function App() {
     reason: "not_connected"
   });
   const [now, setNow] = useState(Date.now());
-  const [autonomous, setAutonomous] = useState(false);
+  const [controlState, setControlState] = useState({
+    forward: false,
+    backward: false,
+    frontBrake: false,
+    rearBrake: false,
+    brake: false,
+    emergency: false,
+    autonomous: false,
+    vfdHz: 0,
+    vfdPwmValue: 0
+  });
   
   // TEMA KONTROLÜ ARTIK BURADA! (Varsayılan: Karanlık)
   const [darkMode, setDarkMode] = useState(true); 
@@ -75,6 +85,9 @@ function App() {
       },
       (status) => {
         setRaspberryStatus(status);
+      },
+      (state) => {
+        setControlState((current) => ({ ...current, ...state }));
       }
     );
     return () => telemetryService.stop();
@@ -94,8 +107,8 @@ function App() {
         telemetryStale={telemetryStale}
         lastUpdate={lastUpdate} 
         telemetry={telemetry}
-        autonomous={autonomous}
-        setAutonomous={setAutonomous}
+        controlState={controlState}
+        onControlStateChange={(state) => setControlState((current) => ({ ...current, ...state }))}
         darkMode={darkMode}           // Layout'a temayı gönderdik
         setDarkMode={setDarkMode}     // Butonun çalışması için fonksiyonu gönderdik
       >

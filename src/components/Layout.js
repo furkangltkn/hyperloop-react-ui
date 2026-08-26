@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import { Box, List, ListItemButton, IconButton, Typography } from "@mui/material";
 import DashboardIcon from "@mui/icons-material/Dashboard";
@@ -32,12 +32,9 @@ const OrientationIndicator = ({ label, value, color }) => (
   </Box>
 );
 
-export default function Layout({ children, lastUpdate, connectionStatus, raspberryStatus, telemetryStale, telemetry, autonomous, setAutonomous, darkMode, setDarkMode }) {
-  const [resetVersion, setResetVersion] = useState(0);
-
-  const handleResetCompleted = () => {
-    setAutonomous(false);
-    setResetVersion((currentVersion) => currentVersion + 1);
+export default function Layout({ children, lastUpdate, connectionStatus, raspberryStatus, telemetryStale, telemetry, controlState, onControlStateChange, darkMode, setDarkMode }) {
+  const handleResetCompleted = (state) => {
+    if (state) onControlStateChange(state);
   };
 
   const themeColors = {
@@ -74,7 +71,7 @@ export default function Layout({ children, lastUpdate, connectionStatus, raspber
           connectionStatus={connectionStatus}
           raspberryStatus={raspberryStatus}
           telemetryStale={telemetryStale}
-          autonomous={autonomous}
+          autonomous={Boolean(controlState?.autonomous)}
           onResetCompleted={handleResetCompleted}
         />
       </Box>
@@ -129,12 +126,33 @@ export default function Layout({ children, lastUpdate, connectionStatus, raspber
             flexDirection: "column",
             background: themeColors.bgCardArea,
             p: 2,
-            overflow: "hidden"
+            overflow: "hidden",
+            position: "relative"
           }}
         >
           <Box sx={{ width: "100%", height: "100%", display: "flex", flexDirection: "column" }}>
             {children}
           </Box>
+
+          <Typography
+            aria-label="Telif bilgisi"
+            sx={{
+              position: "absolute",
+              left: "50%",
+              bottom: 6,
+              transform: "translateX(-50%)",
+              color: themeColors.textMuted,
+              fontSize: 9,
+              fontWeight: 600,
+              letterSpacing: 1,
+              textAlign: "center",
+              whiteSpace: "nowrap",
+              pointerEvents: "none",
+              opacity: 0.8
+            }}
+          >
+            © DEVELOPED BY PARTECH HYPERLOOP
+          </Typography>
         </Box>
 
         <Box
@@ -304,18 +322,18 @@ export default function Layout({ children, lastUpdate, connectionStatus, raspber
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            pt: 4
+            pt: 2,
+            overflow: "hidden"
           }}
         >
           <ControlPanel
             darkMode={darkMode}
-            autonomous={autonomous}
-            setAutonomous={setAutonomous}
+            controlState={controlState}
+            onControlStateChange={onControlStateChange}
             raspberryConnected={Boolean(raspberryStatus?.raspberryConnected)}
-            resetVersion={resetVersion}
           />
 
-          <Box sx={{ mt: "auto", pb: 4, px: 2, display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
+          <Box sx={{ mt: "auto", pb: 2, px: 2, display: "flex", flexDirection: "column", alignItems: "center", width: "100%", boxSizing: "border-box", flexShrink: 0 }}>
             <Box
               sx={{
                 p: 0.5,
@@ -331,7 +349,10 @@ export default function Layout({ children, lastUpdate, connectionStatus, raspber
                 src={logo}
                 alt="Partech Logo"
                 style={{
-                  width: 150,
+                  width: 112,
+                  maxWidth: "100%",
+                  maxHeight: 112,
+                  objectFit: "contain",
                   height: "auto",
                   borderRadius: "8px",
                   filter: darkMode ? "contrast(1.1) brightness(1.1)" : "none"
@@ -339,8 +360,12 @@ export default function Layout({ children, lastUpdate, connectionStatus, raspber
               />
             </Box>
 
-            <Typography sx={{ mt: 1, fontSize: 10, color: themeColors.textMuted, fontWeight: "bold", letterSpacing: 2 }}>
-              PARTECH TEAM
+            <Typography
+              component="div"
+              sx={{ mt: 1, fontSize: 10, lineHeight: 1.45, color: themeColors.textMuted, fontWeight: "bold", letterSpacing: 2, textAlign: "center" }}
+            >
+              PARTECH HYPERLOOP
+              <Box component="span" sx={{ display: "block" }}>TEAM</Box>
             </Typography>
           </Box>
         </Box>

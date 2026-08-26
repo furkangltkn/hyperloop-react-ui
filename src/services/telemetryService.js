@@ -62,11 +62,12 @@ class TelemetryService {
     this.throttleLimit = 100;
   }
 
-  async start(onTelemetryReceived, onStatusChange, onRaspberryStatusChange) {
+  async start(onTelemetryReceived, onStatusChange, onRaspberryStatusChange, onControlStateChange) {
     console.log("SignalR start çağrıldı. State:", this.connection.state);
 
     this.connection.off("telemetry");
     this.connection.off("connectionStatus");
+    this.connection.off("controlState");
 
     const mergeTelemetry = (target, source) => {
       if (!source || typeof source !== "object") return target;
@@ -193,6 +194,12 @@ class TelemetryService {
         onRaspberryStatusChange?.(normalizedStatus);
       } else {
         console.warn("Bilinmeyen Raspberry bağlantı durumu:", status);
+      }
+    });
+
+    this.connection.on("controlState", (state) => {
+      if (state && typeof state === "object") {
+        onControlStateChange?.(state);
       }
     });
 

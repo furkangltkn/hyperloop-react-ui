@@ -35,8 +35,8 @@ export default function StatusBar({ lastUpdate, connectionStatus, raspberryStatu
 
     setResetState("sending");
     try {
-      await sendCommand("RESET");
-      onResetCompleted?.();
+      const result = await sendCommand("RESET");
+      onResetCompleted?.(result.controlState);
       setResetState("success");
     } catch (error) {
       console.error("Reset komutu gönderilemedi:", error);
