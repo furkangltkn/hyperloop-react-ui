@@ -329,6 +329,7 @@ export default function Layout({ children, lastUpdate, connectionStatus, raspber
           <ControlPanel
             darkMode={darkMode}
             controlState={controlState}
+            hardwareEmergencyActive={Number(telemetry?.emergency?.acil_durum) === 1}
             onControlStateChange={onControlStateChange}
             raspberryConnected={Boolean(raspberryStatus?.raspberryConnected)}
           />

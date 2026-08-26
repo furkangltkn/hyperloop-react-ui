@@ -12,7 +12,7 @@ const playSynthSound = (type) => {
   /* Mevcut ses fonksiyonun */
 };
 
-function ControlPanel({ darkMode = true, controlState = {}, onControlStateChange, raspberryConnected = false }) {
+function ControlPanel({ darkMode = true, controlState = {}, hardwareEmergencyActive = false, onControlStateChange, raspberryConnected = false }) {
   const brake = Boolean(controlState.brake);
   const frontBrake = Boolean(controlState.frontBrake);
   const rearBrake = Boolean(controlState.rearBrake);
@@ -43,6 +43,9 @@ function ControlPanel({ darkMode = true, controlState = {}, onControlStateChange
   }, []);
 
   const systemStatus = useMemo(() => {
+    if (hardwareEmergencyActive) {
+      return { label: "D. ACİL DURUM", color: colors.emergency, border: colors.emergency };
+    }
     if (emergency) {
       return { label: "ACİL DURUM", color: colors.emergency, border: colors.emergency };
     }
@@ -66,7 +69,7 @@ function ControlPanel({ darkMode = true, controlState = {}, onControlStateChange
     }
 
     return { label: "HAZIR", color: colors.ready, border: colors.ready };
-  }, [autonomous, backward, brake, colors.brake, colors.emergency, colors.forward, colors.ready, emergency, forward, frontBrake, rearBrake]);
+  }, [autonomous, backward, brake, colors.brake, colors.emergency, colors.forward, colors.ready, emergency, forward, frontBrake, hardwareEmergencyActive, rearBrake]);
 
   const sciFiStyle = {
     width: "100%", height: 44, fontWeight: "bold", letterSpacing: 1, display: "flex",
