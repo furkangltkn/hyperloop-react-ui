@@ -45,7 +45,10 @@ export default function PriorityView({ telemetry, lastUpdate, darkMode }) {
       {/* 1. ÜST GÖREV PANELİ */}
       <MissionPanel
         progress={telemetry?.mission?.progress ?? 0}
-        distanceLeft={telemetry?.mission?.distanceLeft ?? 850}
+        distanceLeft={telemetry?.mission?.distanceLeft}
+        departureTime={telemetry?.mission?.departureTime}
+        estimatedArrivalTime={telemetry?.mission?.estimatedArrivalTime}
+        status={telemetry?.mission?.status}
       />
 
       {/* 2. ANA PANEL (IZGARA YAPISI) */}
@@ -110,9 +113,9 @@ export default function PriorityView({ telemetry, lastUpdate, darkMode }) {
               <Typography sx={{ fontSize: 9, color: "#94a3b8", mb: 0.5, textAlign: "center" }}>BATARYA SICAKLIKLARI</Typography>
               <Box sx={{ display: "flex", gap: 0.5 }}>
                 <SmallDataBox label="YV-1" value={telemetry?.temperature?.bt3 ?? "--"} color="#4fc3f7" />
-                <SmallDataBox label="YV-2" value={telemetry?.temperature?.bt4 ?? "--"} color="#4fc3f7" />
-                <SmallDataBox label="Acil Durum" value={telemetry?.temperature?.bt1 ?? "--"} color="#4fc3f7" />
-                <SmallDataBox label="Alt Sistem" value={telemetry?.temperature?.bt2 ?? "--"} color="#4fc3f7" />
+                <SmallDataBox label="YV-2" value={telemetry?.temperature?.bt10 ?? "--"} color="#4fc3f7" />
+                <SmallDataBox label="Acil Durum" value={telemetry?.temperature?.bt2 ?? "--"} color="#4fc3f7" />
+                <SmallDataBox label="Alt Sistem" value={telemetry?.temperature?.bt1 ?? "--"} color="#4fc3f7" />
               </Box>
             </Box>
           </Box>

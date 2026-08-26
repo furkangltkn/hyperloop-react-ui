@@ -62,21 +62,25 @@ function VehicleHologram({ telemetry, darkMode }) {
     return geometry;
   }, []);
 
-  // Kritik durum kontrolü (Sıcaklık veya Basınç yüksekse kırmızı hologram)
-  const isCritical = telemetry?.temperature?.bt1 > 60 || telemetry?.pressure?.p1 > 100;
+  // Herhangi bir batarya sıcaklığı veya fren basıncı kritikse hologramı kırmızı göster.
+  const temperatures = Object.values(telemetry?.temperature ?? {}).map(Number).filter(Number.isFinite);
+  const pressures = Object.values(telemetry?.pressure ?? {}).map(Number).filter(Number.isFinite);
+  const isCritical = temperatures.some((value) => value > 60) || pressures.some((value) => value > 100);
 
   const hologramColor = isCritical
     ? darkMode ? "#ff4d4d" : "#e11d48"
     : darkMode ? "#00e5ff" : "#0284c7";
 
   useFrame(() => {
-    // Pitch ve Roll hareketlerini telemetriden al (Yoksa 0 kabul et)
-    const pitch = telemetry?.motion?.ax ? telemetry.motion.px * 0.12 : 0;
-    const roll = telemetry?.motion?.ay ? telemetry.motion.yx * 0.12 : 0;
+    // Backend eşlemesi: RX=roll, PX=pitch, YX=yaw (derece).
+    const pitch = THREE.MathUtils.degToRad(Number(telemetry?.motion?.px) || 0);
+    const roll = THREE.MathUtils.degToRad(Number(telemetry?.motion?.rx) || 0);
+    const yaw = THREE.MathUtils.degToRad(Number(telemetry?.motion?.yx) || 0);
 
     if (meshRef.current) {
       // Hareketleri yumuşak bir sönümleme (Lerp) ile uygula
       meshRef.current.rotation.x += (pitch - meshRef.current.rotation.x) * 0.1;
+      meshRef.current.rotation.y += (yaw - meshRef.current.rotation.y) * 0.1;
       meshRef.current.rotation.z += (roll - meshRef.current.rotation.z) * 0.1;
     }
   });
@@ -99,6 +103,10 @@ function VehicleHologram({ telemetry, darkMode }) {
 }
 
 export default function DigitalTwin({ telemetry, darkMode = true }) {
+  const hasOrientation = ["rx", "px", "yx"].some(
+    (key) => Number.isFinite(Number(telemetry?.motion?.[key]))
+  );
+
   return (
     <Canvas 
       // KAMERA AYARI: Uzayan gövdeyi tam sığdırmak için pozisyon optimize edildi
@@ -118,7 +126,7 @@ export default function DigitalTwin({ telemetry, darkMode = true }) {
       <OrbitControls
         enableZoom={false}
         enablePan={false}
-        autoRotate={!telemetry?.motion?.rx} // Hareket verisi yoksa otomatik dönsün
+        autoRotate={!hasOrientation}
         autoRotateSpeed={0.7}
       />
     </Canvas>

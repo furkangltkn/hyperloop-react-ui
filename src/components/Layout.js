@@ -330,6 +330,7 @@ export default function Layout({ children, lastUpdate, connectionStatus, raspber
             darkMode={darkMode}
             controlState={controlState}
             hardwareEmergencyActive={Number(telemetry?.emergency?.acil_durum) === 1}
+            autonomousDrive={telemetry?.autonomousDrive}
             onControlStateChange={onControlStateChange}
             raspberryConnected={Boolean(raspberryStatus?.raspberryConnected)}
           />

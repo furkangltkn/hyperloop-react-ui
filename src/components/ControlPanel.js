@@ -12,7 +12,7 @@ const playSynthSound = (type) => {
   /* Mevcut ses fonksiyonun */
 };
 
-function ControlPanel({ darkMode = true, controlState = {}, hardwareEmergencyActive = false, onControlStateChange, raspberryConnected = false }) {
+function ControlPanel({ darkMode = true, controlState = {}, hardwareEmergencyActive = false, autonomousDrive, onControlStateChange, raspberryConnected = false }) {
   const brake = Boolean(controlState.brake);
   const frontBrake = Boolean(controlState.frontBrake);
   const rearBrake = Boolean(controlState.rearBrake);
@@ -49,6 +49,27 @@ function ControlPanel({ darkMode = true, controlState = {}, hardwareEmergencyAct
     if (emergency) {
       return { label: "ACİL DURUM", color: colors.emergency, border: colors.emergency };
     }
+    if (autonomous) {
+      const feedback = [
+        { active: Number(autonomousDrive?.f) === 1, label: "OTONOM MOD İLERİ", color: colors.forward },
+        { active: Number(autonomousDrive?.b) === 1, label: "OTONOM MOD GERİ", color: colors.forward },
+        { active: Number(autonomousDrive?.br) === 1, label: "OTONOM MOD FREN", color: colors.brake },
+        { active: Number(autonomousDrive?.e) === 1, label: "OTONOM BOŞTA", color: colors.ready }
+      ];
+      const activeFeedback = feedback.filter(({ active }) => active);
+      const hasCompleteFeedback = ["f", "b", "br", "e"].every(
+        (key) => Number(autonomousDrive?.[key]) === 0 || Number(autonomousDrive?.[key]) === 1
+      );
+
+      if (!hasCompleteFeedback) {
+        return { label: "OTONOM DURUM BEKLENİYOR", color: colors.forward, border: colors.forward };
+      }
+      if (activeFeedback.length !== 1) {
+        return { label: "OTONOM DURUM HATASI", color: colors.emergency, border: colors.emergency };
+      }
+
+      return { ...activeFeedback[0], border: activeFeedback[0].color };
+    }
     if (brake) {
       return { label: "FREN KİLİTLENDİ", color: colors.brake, border: colors.brake };
     }
@@ -64,12 +85,8 @@ function ControlPanel({ darkMode = true, controlState = {}, hardwareEmergencyAct
     if (backward) {
       return { label: "GERİ HAREKET", color: colors.forward, border: colors.forward };
     }
-    if (autonomous) {
-      return { label: "OTONOM MOD", color: colors.forward, border: colors.forward };
-    }
-
     return { label: "HAZIR", color: colors.ready, border: colors.ready };
-  }, [autonomous, backward, brake, colors.brake, colors.emergency, colors.forward, colors.ready, emergency, forward, frontBrake, hardwareEmergencyActive, rearBrake]);
+  }, [autonomous, autonomousDrive, backward, brake, colors.brake, colors.emergency, colors.forward, colors.ready, emergency, forward, frontBrake, hardwareEmergencyActive, rearBrake]);
 
   const sciFiStyle = {
     width: "100%", height: 44, fontWeight: "bold", letterSpacing: 1, display: "flex",

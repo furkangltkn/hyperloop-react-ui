@@ -1,20 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Box, Typography } from "@mui/material";
 
 export default function MissionPanel({ 
-  departureTime = "14:30:00", 
-  progress = 45, 
-  status = "HIZLANMA" 
+  departureTime = "--:--:--",
+  estimatedArrivalTime = "--:--:--",
+  distanceLeft,
+  progress = 0,
+  status = "VERİ BEKLENİYOR"
 }) {
-  // Burayı istediğin sabit değerle başlattık
-  const [displayEta, setDisplayEta] = useState("14:30:05");
-
-  // Eğer bu değerin dinamik olarak (telemetriden vs.) değişmesini istemiyorsan 
-  // useEffect içeriğini boş bırakabilir veya silebilirsin.
-  useEffect(() => {
-    // Sabit kalması için şu an bir işlem yapmıyoruz.
-    // Eğer ileride bir hesaplama istersen buraya ekleyebilirsin.
-  }, []);
+  const normalizedProgress = Math.min(100, Math.max(0, Number(progress) || 0));
+  const displayedDistance = distanceLeft == null ? "--" : distanceLeft;
 
   const getStatusStyle = (currentStatus) => {
     switch (currentStatus) {
@@ -74,7 +69,7 @@ export default function MissionPanel({
             {status}
           </Typography>
           <Typography sx={{ color: "#94a3b8", fontSize: 10, mt: 0.2, fontWeight: 500 }}>
-            KALAN MESAFE: <span style={{ color: "#facc15", fontWeight: "bold" }}>208m</span>
+            KALAN MESAFE: <span style={{ color: "#facc15", fontWeight: "bold" }}>{displayedDistance} m</span>
           </Typography>
         </Box>
 
@@ -84,7 +79,7 @@ export default function MissionPanel({
             TAHMİNİ VARIŞ ZAMANI
           </Typography>
           <Typography sx={{ color: "#4dff88", fontSize: 16, fontFamily: "'JetBrains Mono', monospace", fontWeight: 500 }}>
-            {displayEta}
+            {estimatedArrivalTime}
           </Typography>
         </Box>
 
@@ -96,7 +91,7 @@ export default function MissionPanel({
           sx={{ 
             position: "absolute", 
             top: 0, left: 0, bottom: 0, 
-            width: `${progress}%`, 
+            width: `${normalizedProgress}%`,
             background: activeStyle.color,
             boxShadow: `0 0 8px ${activeStyle.glow}`,
             borderRadius: 2,

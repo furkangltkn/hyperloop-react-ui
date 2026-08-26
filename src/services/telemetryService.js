@@ -134,8 +134,8 @@ class TelemetryService {
       mergeTelemetry(normalized, payload);
 
       // Nested obje anahtarlarını normalize et (ör. BT1 -> bt1, P2 -> p2)
-      ["temperature", "pressure", "current", "voltage", "motion", "power", "emergency"].forEach((groupName) => {
-        const groupEntry = Object.entries(payload).find(([key]) => key.toLowerCase() === groupName);
+      ["temperature", "pressure", "current", "voltage", "motion", "power", "emergency", "autonomousDrive"].forEach((groupName) => {
+        const groupEntry = Object.entries(payload).find(([key]) => key.toLowerCase() === groupName.toLowerCase());
         if (!groupEntry) return;
 
         const group = groupEntry[1];

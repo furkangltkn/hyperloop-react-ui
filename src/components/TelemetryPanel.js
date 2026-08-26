@@ -157,15 +157,15 @@ export default function TelemetryPanel({ telemetry, mode, darkMode = true }) {
             <Box sx={{ display: "flex", gap: 4, ml: 2 }}>
 
               <Typography sx={{ fontSize: 10, color: "#565f89", fontWeight: "bold" }}>
-                HV: <span style={{color: "#fff"}}>{getVal(telemetry, "current.i1", "--")}</span>
+                HV: <span style={{color: "#fff"}}>{getVal(telemetry, "current.i3", "--")}</span>
               </Typography>
 
               <Typography sx={{ fontSize: 10, color: "#565f89", fontWeight: "bold" }}>
-                Alt Sistem: <span style={{color: "#00e676"}}>{getVal(telemetry, "current.i2", "--")}</span>
+                Alt Sistem: <span style={{color: "#00e676"}}>{getVal(telemetry, "current.i1", "--")}</span>
               </Typography>
 
               <Typography sx={{ fontSize: 10, color: "#565f89", fontWeight: "bold" }}>
-                Acil Durum: <span style={{color: "#7dcfff"}}>{getVal(telemetry, "current.i3", "--")}</span>
+                Acil Durum: <span style={{color: "#7dcfff"}}>{getVal(telemetry, "current.i2", "--")}</span>
               </Typography>
 
             </Box>
@@ -198,9 +198,9 @@ export default function TelemetryPanel({ telemetry, mode, darkMode = true }) {
                 <Typography sx={{ fontSize: 9, color: "#94a3b8", mb: 0.5, textAlign: "center" }}>BATARYA SICAKLIKLARI</Typography>
                 <Box sx={{ display: "flex", gap: 0.5 }}>
                    <SmallDataBox label="YV-1" value={getVal(telemetry, "temperature.bt3", "--")} color="#4fc3f7" />
-                   <SmallDataBox label="YV-2" value={getVal(telemetry, "temperature.bt4", "--")} color="#4fc3f7" />
-                   <SmallDataBox label="Acil Durum" value={getVal(telemetry, "temperature.bt1", "--")} color="#4fc3f7" />
-                   <SmallDataBox label="Alt Sistem " value={getVal(telemetry, "temperature.bt2", "--")} color="#4fc3f7" />
+                   <SmallDataBox label="YV-2" value={getVal(telemetry, "temperature.bt10", "--")} color="#4fc3f7" />
+                   <SmallDataBox label="Acil Durum" value={getVal(telemetry, "temperature.bt2", "--")} color="#4fc3f7" />
+                   <SmallDataBox label="Alt Sistem " value={getVal(telemetry, "temperature.bt1", "--")} color="#4fc3f7" />
                 </Box>
              </Box>
           </Box>
