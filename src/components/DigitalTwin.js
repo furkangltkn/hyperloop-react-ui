@@ -110,7 +110,9 @@ export default function DigitalTwin({ telemetry, darkMode = true }) {
   return (
     <Canvas 
       // KAMERA AYARI: Uzayan gövdeyi tam sığdırmak için pozisyon optimize edildi
-      camera={{ position: [3.8, 2.4, 4.8], fov: 40 }} 
+      camera={{ position: [3.8, 2.4, 4.8], fov: 40 }}
+      dpr={[1, 1.5]}
+      gl={{ antialias: false, powerPreference: "low-power" }}
       style={{ background: 'transparent', width: '100%', height: '100%' }}
     >
       <ambientLight intensity={darkMode ? 0.3 : 0.6} />

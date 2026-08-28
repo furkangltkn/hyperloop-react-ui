@@ -55,7 +55,9 @@ class TelemetryService {
         withCredentials: true,
       })
       .withAutomaticReconnect()
-      .configureLogging(signalR.LogLevel.Trace)
+      // Trace logs every SignalR frame and can retain a large amount of data in
+      // the browser console during a long-running telemetry session.
+      .configureLogging(signalR.LogLevel.Warning)
       .build();
 
     this.lastUpdateTime = 0;
@@ -172,6 +174,9 @@ class TelemetryService {
     };
 
     this.connection.on("telemetry", (data) => {
+      const now = performance.now();
+      if (now - this.lastUpdateTime < this.throttleLimit) return;
+
       let parsedData = null;
 
       if (typeof data === "object" && data !== null) {
@@ -184,7 +189,10 @@ class TelemetryService {
         }
       }
 
-      if (parsedData) onTelemetryReceived(parsedData);
+      if (parsedData) {
+        this.lastUpdateTime = now;
+        onTelemetryReceived(parsedData);
+      }
     });
 
     this.connection.on("connectionStatus", (status) => {
