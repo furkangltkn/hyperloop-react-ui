@@ -4,13 +4,20 @@ import NeonGauge from "../components/NeonGauge";
 import MissionPanel from "../components/MissionPanel";
 import NeonHorizontalBar from "../components/NeonHorizontalBar";
 
+const powerConsumptionItems = [
+  { label: "HV", key: "pw1", color: "#b388ff" },
+  { label: "AS", key: "pw2", color: "#00e676" },
+  { label: "AD", key: "pw3", color: "#29b6f6" },
+  { label: "T", key: "pw4", color: "#ffb74d" }
+];
+
 export default function PriorityView({ telemetry, lastUpdate, darkMode }) {
-  const momentarySpeed = telemetry?.motion?.sx ?? 0;
-  const avgSpeed = telemetry?.motion?.as ?? 0;
-  const posX = telemetry?.motion?.lx ?? 0;
-  const reflectorCount1 = telemetry?.motion?.rc1 ?? 0;
-  const reflectorCount2 = telemetry?.motion?.rc2 ?? 0;
-  const reflectorCount3 = telemetry?.motion?.rc3 ?? 0;
+  const momentarySpeed = telemetry?.motion?.sx;
+  const avgSpeed = telemetry?.motion?.as;
+  const posX = telemetry?.motion?.lx;
+  const reflectorCount1 = telemetry?.motion?.rc1 ?? "--";
+  const reflectorCount2 = telemetry?.motion?.rc2 ?? "--";
+  const reflectorCount3 = telemetry?.motion?.rc3 ?? "--";
 
   // Stil: Matris Kutusu (Sol Panel)
   const MatrixBox = ({ value }) => (
@@ -44,7 +51,7 @@ export default function PriorityView({ telemetry, lastUpdate, darkMode }) {
 
       {/* 1. ÜST GÖREV PANELİ */}
       <MissionPanel
-        progress={telemetry?.mission?.progress ?? 0}
+        progress={telemetry?.mission?.progress}
         distanceLeft={telemetry?.mission?.distanceLeft}
         departureTime={telemetry?.mission?.departureTime}
         estimatedArrivalTime={telemetry?.mission?.estimatedArrivalTime}
@@ -71,9 +78,9 @@ export default function PriorityView({ telemetry, lastUpdate, darkMode }) {
             </Box>
 
             {[
-              { label: "HIZ (m/s)", vals: [telemetry?.motion?.sx ?? 0, telemetry?.motion?.sy ?? 0, telemetry?.motion?.sz ?? 0] },
-              { label: "KONUM (m)", vals: [posX, telemetry?.motion?.ly ?? 0, telemetry?.motion?.lz ?? 0] },
-              { label: "İVME (a)", vals: [telemetry?.motion?.ax ?? 0, telemetry?.motion?.ay ?? 0, telemetry?.motion?.az ?? 0] }
+              { label: "HIZ (m/s)", vals: [telemetry?.motion?.sx ?? "--", telemetry?.motion?.sy ?? "--", telemetry?.motion?.sz ?? "--"] },
+              { label: "KONUM (m)", vals: [posX ?? "--", telemetry?.motion?.ly ?? "--", telemetry?.motion?.lz ?? "--"] },
+              { label: "İVME (a)", vals: [telemetry?.motion?.ax ?? "--", telemetry?.motion?.ay ?? "--", telemetry?.motion?.az ?? "--"] }
             ].map((row, idx) => (
               <Box key={idx} sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: idx === 2 ? 0 : 1.5 }}>
                 <Typography sx={{ width: 100, color: "#94a3b8", fontSize: 11, fontWeight: "bold" }}>{row.label}</Typography>
@@ -86,21 +93,36 @@ export default function PriorityView({ telemetry, lastUpdate, darkMode }) {
         </Box>
 
         {/* SAĞ KOLON: DİKEY YERLEŞİM */}
-        <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
+        <Box sx={{ display: "flex", flexDirection: "column", height: "100%", minHeight: 0 }}>
 
           {/* Üst Grup: Barlar ve Sıcaklıklar */}
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 1.2, px: 1 }}>
-            <NeonHorizontalBar value={telemetry?.power?.pw1 ?? 0} max={150} label="GÜÇ TÜKETİMİ" unit="kW" color="#b388ff" />
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 0.8, px: 1, mt: -0.5 }}>
+            <Box>
+              <Typography sx={{ fontSize: 9, color: "#94a3b8", mb: 0.5, textAlign: "center" }}>GÜÇ TÜKETİMİ</Typography>
+              <Box sx={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 0.75 }}>
+                {powerConsumptionItems.map((item) => (
+                  <NeonHorizontalBar
+                    key={item.key}
+                    value={telemetry?.power?.[item.key]}
+                    max={150}
+                    label={item.label}
+                    unit="kW"
+                    color={item.color}
+                    compact
+                  />
+                ))}
+              </Box>
+            </Box>
             <Box sx={{ display: "flex", gap: 1 }}>
               <Box sx={{ flex: 1 }}>
-                <NeonHorizontalBar value={telemetry?.pressure?.p1 ?? 0} max={120} label="FREN BASINCI" unit="kPa" color="#29b6f6" />
+                <NeonHorizontalBar value={telemetry?.pressure?.p1} max={120} label="FREN BASINCI" unit="kPa" color="#29b6f6" />
               </Box>
               <Box sx={{ flex: 1 }}>
-                <NeonHorizontalBar value={telemetry?.pressure?.p2 ?? 0} max={120} label="FREN BASINCI" unit="kPa" color="#29b6f6" />
+                <NeonHorizontalBar value={telemetry?.pressure?.p2} max={120} label="FREN BASINCI" unit="kPa" color="#29b6f6" />
               </Box>
             </Box>
 
-            <Box sx={{ mt: 1 }}>
+            <Box sx={{ mt: 0.5 }}>
               <Typography sx={{ fontSize: 9, color: "#94a3b8", mb: 0.5, textAlign: "center" }}>KAPSÜL İÇ SICAKLIKLARI</Typography>
               <Box sx={{ display: "flex", gap: 0.5 }}>
                 <SmallDataBox label="B1" value={telemetry?.motion?.mt1 ?? "--"} />
@@ -109,7 +131,7 @@ export default function PriorityView({ telemetry, lastUpdate, darkMode }) {
               </Box>
             </Box>
 
-            <Box sx={{ mt: 1 }}>
+            <Box sx={{ mt: 0.5 }}>
               <Typography sx={{ fontSize: 9, color: "#94a3b8", mb: 0.5, textAlign: "center" }}>BATARYA SICAKLIKLARI</Typography>
               <Box sx={{ display: "flex", gap: 0.5 }}>
                 <SmallDataBox label="YV-1" value={telemetry?.temperature?.bt3 ?? "--"} color="#4fc3f7" />
@@ -121,7 +143,7 @@ export default function PriorityView({ telemetry, lastUpdate, darkMode }) {
           </Box>
 
           {/* Reflektör Sayacı Kutuları */}
-          <Box sx={{ px: 1, mt: 2 }}>
+          <Box sx={{ px: 1, mt: 1.25 }}>
             <Box sx={{ display: "flex", gap: 0.8 }}>
               {[
                 { label: "REFLEKTÖR 1", value: reflectorCount1 },
@@ -149,18 +171,18 @@ export default function PriorityView({ telemetry, lastUpdate, darkMode }) {
           </Box>
 
           {/* Konum Kutusu */}
-          <Box sx={{ px: 1, mt: 2 }}>
+          <Box sx={{ px: 1, mt: 1.25 }}>
             <Box sx={{ background: "rgba(15, 23, 42, 0.6)", border: "1px solid rgba(125, 207, 255, 0.2)", borderRadius: 1, py: 1, display: "flex", flexDirection: "column", alignItems: "center" }}>
               <Typography sx={{ fontSize: 8, color: "#7dcfff", fontWeight: "bold" }}>KONUM (m)</Typography>
-              <Typography sx={{ fontSize: 18, color: "#fff", fontWeight: "bold", fontFamily: "monospace" }}>{posX.toFixed(2)}</Typography>
+              <Typography sx={{ fontSize: 18, color: "#fff", fontWeight: "bold", fontFamily: "monospace" }}>{typeof posX === "number" ? posX.toFixed(2) : "--"}</Typography>
             </Box>
           </Box>
 
           {/* Esnek Boşluk */}
-          <Box sx={{ flexGrow: 1 }} />
+          <Box sx={{ flexGrow: 1, minHeight: 12 }} />
 
           {/* EN ALTA SABİTLENEN HIZ İBRELERİ */}
-          <Box sx={{ display: "flex", gap: 1.2, px: 1, pb: 9.5, height: 125, flexShrink: 0 }}>
+          <Box sx={{ display: "flex", gap: 1.2, px: 1, mb: 4, height: 125, flexShrink: 0 }}>
             <Box sx={{ flex: 1, background: "rgba(30, 41, 59, 0.3)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 2 }}>
               <NeonGauge value={momentarySpeed} max={300} label="ANLIK HIZ" color="#00e676" />
             </Box>

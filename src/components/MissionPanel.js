@@ -2,10 +2,10 @@ import React from "react";
 import { Box, Typography } from "@mui/material";
 
 export default function MissionPanel({ 
-  departureTime = "--:--:--",
-  estimatedArrivalTime = "--:--:--",
+  departureTime = "--",
+  estimatedArrivalTime = "--",
   distanceLeft,
-  progress = 0,
+  progress,
   status = "VERİ BEKLENİYOR"
 }) {
   const normalizedProgress = Math.min(100, Math.max(0, Number(progress) || 0));
@@ -69,7 +69,7 @@ export default function MissionPanel({
             {status}
           </Typography>
           <Typography sx={{ color: "#94a3b8", fontSize: 10, mt: 0.2, fontWeight: 500 }}>
-            KALAN MESAFE: <span style={{ color: "#facc15", fontWeight: "bold" }}>{displayedDistance} m</span>
+            KALAN MESAFE: <span style={{ color: "#facc15", fontWeight: "bold" }}>{displayedDistance}{distanceLeft == null ? "" : " m"}</span>
           </Typography>
         </Box>
 

@@ -60,8 +60,6 @@ class TelemetryService {
       .configureLogging(signalR.LogLevel.Warning)
       .build();
 
-    this.lastUpdateTime = 0;
-    this.throttleLimit = 100;
   }
 
   async start(onTelemetryReceived, onStatusChange, onRaspberryStatusChange, onControlStateChange) {
@@ -89,24 +87,21 @@ class TelemetryService {
 
       const obj = {};
       const payload = raw.includes("|") ? raw.split("|").slice(1).join("|") : raw;
-      const kvPairs = payload.split(",");
+      const kvPairs = payload.matchAll(/([a-zA-Z_][a-zA-Z0-9_]*):([-+]?(?:\d+(?:[.,]\d+)?|[.,]\d+)(?:[eE][-+]?\d+)?)/g);
 
-      kvPairs.forEach((pair) => {
-        const [rawKey, rawValue] = pair.split(":");
-        if (!rawKey || rawValue === undefined) return;
-
-        const key = rawKey.trim();
-        const value = parseFloat(rawValue);
-        if (Number.isNaN(value)) return;
+      for (const pair of kvPairs) {
+        const key = pair[1].trim();
+        const value = parseFloat(pair[2].replace(",", "."));
+        if (Number.isNaN(value)) continue;
 
         if (key.toUpperCase() === "ACIL_DURUM") {
           if (!obj.emergency) obj.emergency = {};
           obj.emergency.acil_durum = value;
-          return;
+          continue;
         }
 
         const match = key.match(/^([a-zA-Z]+)(\d+)$/i);
-        if (!match) return;
+        if (!match) continue;
 
         const prefix = match[1].toLowerCase();
         const index = match[2];
@@ -123,8 +118,11 @@ class TelemetryService {
         } else if (prefix === "p") {
           if (!obj.pressure) obj.pressure = {};
           obj.pressure[`p${index}`] = value;
+        } else if (prefix === "pw") {
+          if (!obj.power) obj.power = {};
+          obj.power[`pw${index}`] = value;
         }
-      });
+      }
 
       return Object.keys(obj).length ? obj : null;
     };
@@ -174,9 +172,6 @@ class TelemetryService {
     };
 
     this.connection.on("telemetry", (data) => {
-      const now = performance.now();
-      if (now - this.lastUpdateTime < this.throttleLimit) return;
-
       let parsedData = null;
 
       if (typeof data === "object" && data !== null) {
@@ -190,7 +185,6 @@ class TelemetryService {
       }
 
       if (parsedData) {
-        this.lastUpdateTime = now;
         onTelemetryReceived(parsedData);
       }
     });

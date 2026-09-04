@@ -3,7 +3,14 @@ import { Box, Typography } from "@mui/material";
 import NeonGauge from "./NeonGauge";
 import NeonHorizontalBar from "./NeonHorizontalBar";
 
-const getVal = (obj, path, fallback = 0) => {
+const powerConsumptionItems = [
+  { label: "HV", path: "power.pw1", color: "#b388ff" },
+  { label: "AS", path: "power.pw2", color: "#00e676" },
+  { label: "AD", path: "power.pw3", color: "#29b6f6" },
+  { label: "T", path: "power.pw4", color: "#ffb74d" }
+];
+
+const getVal = (obj, path, fallback = "--") => {
   const val = path.split('.').reduce((acc, part) => (acc != null ? acc[part] : undefined), obj);
   return val ?? fallback;
 };
@@ -173,10 +180,24 @@ export default function TelemetryPanel({ telemetry, mode, darkMode = true }) {
         </Box>
 
         {/* SAĞ PANEL: PRİORİTY TASARIMI */}
-        <Box sx={{ display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>
+          <Box sx={{ display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5, px: 1 }}>
              <Box sx={{ display: "flex", flexDirection: "column", gap: 1.2 }}>
-                <NeonHorizontalBar value={getVal(telemetry, "power.pw1")} max={150} label="GÜÇ TÜKETİMİ" unit="kW" color="#b388ff" />
+                <Box>
+                  <Typography sx={{ fontSize: 9, color: "#94a3b8", mb: 0.5, textAlign: "center" }}>GÜÇ TÜKETİMİ</Typography>
+                  <Box sx={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 1 }}>
+                    {powerConsumptionItems.map((item) => (
+                      <NeonHorizontalBar
+                        key={item.path}
+                        value={getVal(telemetry, item.path)}
+                        max={150}
+                        label={item.label}
+                        unit="kW"
+                        color={item.color}
+                      />
+                    ))}
+                  </Box>
+                </Box>
                 <Box sx={{ display: "flex", gap: 1 }}>
                   <Box sx={{ flex: 1 }}>
                     <NeonHorizontalBar value={getVal(telemetry, "pressure.p1")} max={120} label="FREN BASINCI" unit="kPa" color="#29b6f6" />
@@ -226,7 +247,7 @@ export default function TelemetryPanel({ telemetry, mode, darkMode = true }) {
                     REFLEKTÖR {idx + 1}
                   </Typography>
                   <Typography sx={{ fontSize: 18, color: "#fff", fontWeight: "bold", fontFamily: "monospace" }}>
-                    {getVal(telemetry, path, 0)}
+                    {getVal(telemetry, path)}
                   </Typography>
                 </Box>
               ))}
@@ -237,7 +258,9 @@ export default function TelemetryPanel({ telemetry, mode, darkMode = true }) {
           <Box sx={{ px: 1, mt: 2 }}>
              <Box sx={{ background: "rgba(15, 23, 42, 0.6)", border: "1px solid rgba(125, 207, 255, 0.2)", borderRadius: 1, py: 1, display: "flex", flexDirection: "column", alignItems: "center" }}>
                 <Typography sx={{ fontSize: 8, color: "#7dcfff", fontWeight: "bold", letterSpacing: 1 }}>KONUM (m)</Typography>
-                <Typography sx={{ fontSize: 18, color: "#fff", fontWeight: "bold", fontFamily: "monospace" }}>{getVal(telemetry, "motion.lx").toFixed(2)}</Typography>
+                <Typography sx={{ fontSize: 18, color: "#fff", fontWeight: "bold", fontFamily: "monospace" }}>
+                  {typeof getVal(telemetry, "motion.lx") === "number" ? getVal(telemetry, "motion.lx").toFixed(2) : "--"}
+                </Typography>
              </Box>
           </Box>
 

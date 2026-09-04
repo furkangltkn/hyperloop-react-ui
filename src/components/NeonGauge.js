@@ -1,9 +1,11 @@
 import React from "react";
 import { Box, Typography } from "@mui/material";
 
-export default function NeonGauge({ value = 0, max = 100, label = "HIZ", unit = "M/S", color = "#00e676" }) {
+export default function NeonGauge({ value, max = 100, label = "HIZ", unit = "M/S", color = "#00e676" }) {
+  const numericValue = Number(value);
+  const hasValue = value !== null && value !== undefined && value !== "" && Number.isFinite(numericValue);
   // Değeri 0 ile Max arasında sınırla
-  const safeValue = Math.min(Math.max(value, 0), max);
+  const safeValue = hasValue ? Math.min(Math.max(numericValue, 0), max) : 0;
   const percentage = safeValue / max;
   
   // SVG Çizim Parametreleri (Kutuya sığması için optimize edildi)
@@ -58,7 +60,7 @@ export default function NeonGauge({ value = 0, max = 100, label = "HIZ", unit = 
             lineHeight: 1,
             fontFamily: "monospace" 
           }}>
-            {Math.round(safeValue)}
+            {hasValue ? Math.round(safeValue) : "--"}
           </Typography>
           <Typography sx={{ 
             fontSize: 8, 

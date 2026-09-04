@@ -13,18 +13,20 @@ const playSynthSound = (type) => {
 };
 
 function ControlPanel({ darkMode = true, controlState = {}, hardwareEmergencyActive = false, autonomousDrive, onControlStateChange, raspberryConnected = false }) {
-  const brake = Boolean(controlState.brake);
-  const frontBrake = Boolean(controlState.frontBrake);
-  const rearBrake = Boolean(controlState.rearBrake);
-  const forward = Boolean(controlState.forward);
-  const backward = Boolean(controlState.backward);
-  const emergency = Boolean(controlState.emergency);
-  const autonomous = Boolean(controlState.autonomous);
-  const vfdHz = Number.isFinite(Number(controlState.vfdHz)) ? Number(controlState.vfdHz) : 0;
+  const controlStateSynced = controlState != null;
+  const currentState = controlState ?? {};
+  const brake = Boolean(currentState.brake);
+  const frontBrake = Boolean(currentState.frontBrake);
+  const rearBrake = Boolean(currentState.rearBrake);
+  const forward = Boolean(currentState.forward);
+  const backward = Boolean(currentState.backward);
+  const emergency = Boolean(currentState.emergency);
+  const autonomous = Boolean(currentState.autonomous);
+  const vfdHz = Number.isFinite(Number(currentState.vfdHz)) ? Number(currentState.vfdHz) : 0;
   const [time, setTime] = useState(new Date());
   const [commandPending, setCommandPending] = useState(false);
   const panelWidth = 160;
-  const commandDisabled = !raspberryConnected || commandPending;
+  const commandDisabled = !raspberryConnected || !controlStateSynced || commandPending;
 
   const colors = {
     forward: darkMode ? "#7dcfff" : "#0277bd",
@@ -43,6 +45,17 @@ function ControlPanel({ darkMode = true, controlState = {}, hardwareEmergencyAct
   }, []);
 
   const systemStatus = useMemo(() => {
+    if (!controlStateSynced) {
+      return { label: "DURUM SENKRONİZE EDİLİYOR", color: colors.textMuted, border: colors.textMuted };
+    }
+    /*
+    // Otomatik acil durum backend'de aktif edilince bu blok açılacak.
+    // Backend controlState.autoEmergencyActive:true gönderdiğinde sistem durumu
+    // manuel/donanım acilden ayrı olarak "A. ACİL DURUM" gösterecek.
+    if (Boolean(currentState.autoEmergencyActive)) {
+      return { label: "A. ACİL DURUM", color: colors.emergency, border: colors.emergency };
+    }
+    */
     if (hardwareEmergencyActive) {
       return { label: "D. ACİL DURUM", color: colors.emergency, border: colors.emergency };
     }
@@ -86,7 +99,7 @@ function ControlPanel({ darkMode = true, controlState = {}, hardwareEmergencyAct
       return { label: "GERİ HAREKET", color: colors.forward, border: colors.forward };
     }
     return { label: "HAZIR", color: colors.ready, border: colors.ready };
-  }, [autonomous, autonomousDrive, backward, brake, colors.brake, colors.emergency, colors.forward, colors.ready, emergency, forward, frontBrake, hardwareEmergencyActive, rearBrake]);
+  }, [autonomous, autonomousDrive, backward, brake, colors.brake, colors.emergency, colors.forward, colors.ready, colors.textMuted, controlStateSynced, emergency, forward, frontBrake, hardwareEmergencyActive, rearBrake]);
 
   const sciFiStyle = {
     width: "100%", height: 44, fontWeight: "bold", letterSpacing: 1, display: "flex",
@@ -152,7 +165,7 @@ function ControlPanel({ darkMode = true, controlState = {}, hardwareEmergencyAct
           </Button>
           <Box sx={{ minWidth: 0, height: 32, px: 0.5, display: "flex", alignItems: "center", justifyContent: "center", border: `1px solid ${colors.forward}`, borderRadius: 1, background: darkMode ? "rgba(125, 207, 255, 0.08)" : "rgba(2, 119, 189, 0.08)" }}>
             <Typography noWrap sx={{ fontSize: 16, lineHeight: 1, fontWeight: "bold", color: colors.forward }}>
-              {vfdHz} Hz
+              {controlStateSynced ? `${vfdHz} Hz` : "--"}
             </Typography>
           </Box>
           <Button
@@ -271,6 +284,15 @@ function ControlPanel({ darkMode = true, controlState = {}, hardwareEmergencyAct
           disabled={commandDisabled}
           onClick={async () => {
             playSynthSound("emergency");
+            /*
+            // Otomatik acil durum latch'i aktifken kullanıcı Acil butonuna bir kere
+            // basınca çıkış niyeti gönderilecek. Donanım tarafında EMERGENCY toggle
+            // gibi çalışıyorsa bu tek basış otomatik acilden çıkış için yeterli olur.
+            if (Boolean(currentState.autoEmergencyActive)) {
+              await runCommand("EMERGENCY");
+              return;
+            }
+            */
             if (!await exitAutonomousMode()) return;
             await runCommand("EMERGENCY");
           }}

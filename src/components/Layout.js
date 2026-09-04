@@ -27,7 +27,7 @@ const OrientationIndicator = ({ label, value, color }) => (
       {label}
     </Typography>
     <Typography sx={{ color: color, fontSize: 13, fontFamily: "monospace", fontWeight: "bold" }}>
-      {typeof value === "number" ? value.toFixed(1) : "0.0"}°
+      {typeof value === "number" ? `${value.toFixed(1)}°` : "--"}
     </Typography>
   </Box>
 );
@@ -306,9 +306,9 @@ export default function Layout({ children, lastUpdate, connectionStatus, raspber
             </Box>
 
             <Box sx={{ display: "flex", gap: 1, mt: 1.5 }}>
-              <OrientationIndicator label="ROLL" value={telemetry?.motion?.rx || 0} color={themeColors.accent} />
-              <OrientationIndicator label="PITCH" value={telemetry?.motion?.px || 0} color={themeColors.accent} />
-              <OrientationIndicator label="YAW" value={telemetry?.motion?.yx || 0} color={themeColors.accent} />
+              <OrientationIndicator label="ROLL" value={telemetry?.motion?.rx} color={themeColors.accent} />
+              <OrientationIndicator label="PITCH" value={telemetry?.motion?.px} color={themeColors.accent} />
+              <OrientationIndicator label="YAW" value={telemetry?.motion?.yx} color={themeColors.accent} />
             </Box>
           </Box>
         </Box>

@@ -1,9 +1,10 @@
 import React from "react";
 import { Box, Typography } from "@mui/material";
 
-export default function NeonHorizontalBar({ value = 0, max = 100, label = "GÜÇ", unit = "kW", color = "#b388ff" }) {
+export default function NeonHorizontalBar({ value, max = 100, label = "GÜÇ", unit = "kW", color = "#b388ff", compact = false }) {
   const numericValue = Number(value);
-  const resolvedValue = Number.isFinite(numericValue) ? numericValue : 0;
+  const hasValue = value !== null && value !== undefined && value !== "" && Number.isFinite(numericValue);
+  const resolvedValue = hasValue ? numericValue : 0;
   const safeValue = Math.min(Math.max(resolvedValue, 0), max);
   const percentage = (safeValue / max) * 100;
   const isDanger = percentage > 90; 
@@ -21,20 +22,20 @@ export default function NeonHorizontalBar({ value = 0, max = 100, label = "GÜÇ
         borderRadius: 2,
         border: `1px solid ${activeColor}44`,
         boxShadow: glow,
-        p: 1.5,
+        p: compact ? 1 : 1.5,
         boxSizing: "border-box" // Padding'in genişliği bozmasını engeller
       }}
     >
-      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-        <Typography sx={{ color: "#94a3b8", fontSize: 11, letterSpacing: 1 }}>
+      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: compact ? 0.5 : 1 }}>
+        <Typography sx={{ color: "#94a3b8", fontSize: compact ? 9 : 11, letterSpacing: 1 }}>
           {label}
         </Typography>
-        <Typography sx={{ color: activeColor, fontSize: 14, fontWeight: "bold", textShadow: `0 0 8px ${activeColor}` }}>
-          {resolvedValue.toFixed(2)} {unit}
+        <Typography sx={{ color: activeColor, fontSize: compact ? 11 : 14, fontWeight: "bold", textShadow: `0 0 8px ${activeColor}` }}>
+          {hasValue ? `${resolvedValue.toFixed(2)} ${unit}` : "--"}
         </Typography>
       </Box>
 
-      <Box sx={{ width: "100%", height: 8, background: "#0f172a", borderRadius: 4, overflow: "hidden" }}>
+      <Box sx={{ width: "100%", height: compact ? 6 : 8, background: "#0f172a", borderRadius: 4, overflow: "hidden" }}>
         <Box
           sx={{
             width: `${percentage}%`,

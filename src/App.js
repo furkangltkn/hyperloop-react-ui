@@ -11,8 +11,9 @@ const isObject = (item) => item && typeof item === "object" && !Array.isArray(it
  * İki veya daha fazla nesneyi derinlemesine birleştirir.
  */
 const shouldKeepPreviousValue = (nextValue) => {
-  if (nextValue === undefined || nextValue === null) return true;
-  return false;
+  // undefined: alan bu payload'da hiç yok, mevcut değeri koru.
+  // null: backend alanı bu yayın turunda alamadı, değeri temizle.
+  return nextValue === undefined;
 };
 
 function mergeDeep(target, ...sources) {
@@ -46,17 +47,8 @@ function App() {
     reason: "not_connected"
   });
   const [now, setNow] = useState(Date.now());
-  const [controlState, setControlState] = useState({
-    forward: false,
-    backward: false,
-    frontBrake: false,
-    rearBrake: false,
-    brake: false,
-    emergency: false,
-    autonomous: false,
-    vfdHz: 0,
-    vfdPwmValue: 0
-  });
+  // null, Raspberry Pi'den henüz gerçek kontrol durumu alınmadığını belirtir.
+  const [controlState, setControlState] = useState(null);
   
   // TEMA KONTROLÜ ARTIK BURADA! (Varsayılan: Karanlık)
   const [darkMode, setDarkMode] = useState(true); 
@@ -76,6 +68,7 @@ function App() {
       (status) => {
         setConnectionStatus(status);
         if (status !== "connected") {
+          setControlState(null);
           setRaspberryStatus((current) => ({
             ...current,
             raspberryConnected: false,
@@ -87,7 +80,7 @@ function App() {
         setRaspberryStatus(status);
       },
       (state) => {
-        setControlState((current) => ({ ...current, ...state }));
+        setControlState(state ? { ...state } : null);
       }
     );
     return () => telemetryService.stop();
@@ -99,6 +92,10 @@ function App() {
     !lastUpdate ||
     now - lastUpdate.getTime() > 3000;
 
+  // Bağlantı yokken veya yeni paket gelmiyorken eski ölçümleri ekranda
+  // tutma. Bileşenler eksik alanları "--" olarak gösterecek.
+  const displayedTelemetry = telemetryStale ? {} : telemetry;
+
   return (
     <BrowserRouter>
       <Layout 
@@ -106,20 +103,20 @@ function App() {
         raspberryStatus={raspberryStatus}
         telemetryStale={telemetryStale}
         lastUpdate={lastUpdate} 
-        telemetry={telemetry}
+        telemetry={displayedTelemetry}
         controlState={controlState}
-        onControlStateChange={(state) => setControlState((current) => ({ ...current, ...state }))}
+        onControlStateChange={(state) => setControlState(state ? { ...state } : null)}
         darkMode={darkMode}           // Layout'a temayı gönderdik
         setDarkMode={setDarkMode}     // Butonun çalışması için fonksiyonu gönderdik
       >
         <Routes>
           <Route
             path="/"
-            element={<PriorityView telemetry={telemetry} lastUpdate={lastUpdate} darkMode={darkMode} />}
+            element={<PriorityView telemetry={displayedTelemetry} lastUpdate={lastUpdate} darkMode={darkMode} />}
           />
           <Route
             path="/all"
-            element={<AllView telemetry={telemetry} lastUpdate={lastUpdate} darkMode={darkMode} />}
+            element={<AllView telemetry={displayedTelemetry} lastUpdate={lastUpdate} darkMode={darkMode} />}
           />
         </Routes>
       </Layout>
